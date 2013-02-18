@@ -5,6 +5,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.InputStream;
+
 public class CoreTest {
     // Gets run before each method annotated with @Test
     @Before
@@ -29,4 +31,15 @@ public class CoreTest {
         Assert.assertTrue(true);
         System.out.printf("hello test 2\n");
     }
+
+    @Test
+    public void testSomeResource() {
+        InputStream inputStream = getClass().getResourceAsStream("/opaquedata.bin");
+        Assert.assertNotNull(inputStream);
+        System.out.printf("got an inputstream on some test data\n");
+
+        // now do something useful with the inputstream...
+        // ...
+    }
+
 }
