@@ -12,10 +12,10 @@ public class Expense implements Record {
 
 	private static final String RECORD_NAME = "ex";
 	private static final String PRIMARY_KEY = "txId";
-	private static final String DATE = "date";
-	private static final String CATEGORY = "cat";
-	private static final String PAYEE = "payee";
-	private static final String MEMO = "memo";
+	public static final String DATE = "date";
+	public static final String CATEGORY = "cat";
+	public static final String PAYEE = "payee";
+	public static final String MEMO = "memo";
 	
 	private BigDecimal amount;
 	private String category;
@@ -31,7 +31,7 @@ public class Expense implements Record {
         dr.addField(new Field(DATE, FieldType.DATE, this.getDate()));
         dr.addField(new Field(CATEGORY, FieldType.STRING, this.getCategory()));
         dr.addField(new Field(PAYEE, FieldType.FULLTEXT, this.getPayee()));
-        dr.addField(new Field(MEMO, FieldType.STRING, this.getMemo()));
+        dr.addField(new Field(MEMO, FieldType.FULLTEXT, this.getMemo()));
         return dr;
 	}
 

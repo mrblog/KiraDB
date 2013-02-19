@@ -6,8 +6,10 @@ import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
@@ -194,6 +196,60 @@ public class Core {
 		Record r = (Record)object;
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
+        File indexDir = new File(indexPath);
+        FSDirectory idx = FSDirectory.open(indexDir);
+        IndexReader ir = IndexReader.open(idx);
+        
+        Term t = new Term(key, value);
+        TermDocs tdocs = ir.termDocs(t);
+        Object result = null;
+        if (tdocs.next()) {
+        	Document d = ir.document(tdocs.doc());
+        	if (r.descriptor().getStoreObjects()) {
+            	String obj = d.get("object");
+
+            	ByteArrayInputStream fis = new ByteArrayInputStream(obj.getBytes("UTF-8"));
+
+            	ObjectInputStream ois;
+
+            	ois = xstream.createObjectInputStream(fis);
+
+            	result = ois.readObject();
+
+            	ois.close();
+            } else {
+            	// if object not returned, then return fields as key,value pairs
+            	HashMap<String, String> results = new HashMap<String,String>();
+            	results.put(r.getPrimaryKeyName(), (String)d.get(key));
+            	if (r.descriptor().getFields() != null) {
+            		for (Field f : r.descriptor().getFields()) {
+            			results.put(f.getName(), (String)d.get(f.getName()));
+            		}
+            	}
+            	result = results;
+            }
+        }
+        tdocs.close();
+        ir.close();
+        return result;
+	}
+
+	/**
+	 * Retrieve an object (record) by primary key
+	 *
+	 * @param object
+	 * @param value
+	 *
+	 * @return Object or HashMap<String, String> of fields
+	 *
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws KiraException
+	 */
+	public Object retrieveObjectbyPrimaryKeyBySearch(Object object, String value) throws IOException, ClassNotFoundException, KiraException {
+		Record r = (Record)object;
+        String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
+
         List<Document> docs;
 		try {
 			docs = searchDocuments(r.getRecordName(), key + ":" + value, 1);
@@ -230,10 +286,85 @@ public class Core {
         return null;
 	}
 
-	private List<Document> searchDocuments(String querystr, int hitsPerPage) throws CorruptIndexException, IOException, ParseException {
-		return searchDocuments(null, querystr, hitsPerPage);
-	}
+	/**
+	 * Query for matching records
+	 * 
+	 * @param object An instance of the Class / Record
+	 * @param queryFieldName The name to the field to query
+	 * @param querystr The query string
+	 * @param hitsPerPage The number of records to return
+	 * @param skipDocs The number of records to skip
+	 * @param sortFieldName Optional sort field name
+	 * @param reverse Set to true to reverse the sort order
+	 * 
+	 * @return List<Object> list of matching objects or list of matching keys
+	 * 
+	 * @throws KiraException
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public List<Object> executeQuery(Object object, String queryFieldName, String querystr, int hitsPerPage, int skipDocs, String sortFieldName, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
+		List<Document> docs;
+		Record r = (Record)object;
+        String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
+        
+        Sort sortBy = null;
+        if (sortFieldName != null)
+        	sortBy = new Sort(new SortField(sortFieldName, SortField.STRING, reverse));
 
+		try {
+			docs = searchDocuments(r.getRecordName(), queryFieldName + ":" + querystr, sortBy, hitsPerPage, skipDocs);
+		} catch (ParseException e) {
+			throw new KiraException("ParseException " + e.getMessage());
+		} catch (CorruptIndexException e) {
+			throw new KiraCorruptIndexException(e.getMessage());
+		} catch (IOException e) {
+			throw e;
+		}
+		List<Object> results = new ArrayList<Object>();
+        if (docs.size() > 0) {
+        	if (r.descriptor().getStoreObjects()) {
+                for (Document d: docs) {
+                	String obj = d.get("object");
+                    
+                    ByteArrayInputStream fis = new ByteArrayInputStream(obj.getBytes("UTF-8"));
+
+                    ObjectInputStream ois;
+
+                    ois = xstream.createObjectInputStream(fis);
+
+                    results.add(ois.readObject());
+                    ois.close();
+
+                }
+        	} else {
+                for (Document d: docs) {
+                	results.add(d.get(key));
+                }
+        	}
+        }
+        return results;
+	}
+	
+	public void dumpDocuments(String type) throws KiraException, KiraCorruptIndexException, IOException {
+		List<Document> docs;
+
+		try {
+			docs = searchDocuments(type, null, Integer.MAX_VALUE);
+		} catch (ParseException e) {
+			throw new KiraException("ParseException " + e.getMessage());
+		} catch (CorruptIndexException e) {
+			throw new KiraCorruptIndexException(e.getMessage());
+		} catch (IOException e) {
+			throw e;
+		}
+        if (docs.size() > 0) {
+        	for (Document d: docs) {
+        		System.out.println("Doc: " + d);
+        	}
+        }
+	}
+	
 	private List<Document> searchDocuments(String typeStr, String querystr, int hitsPerPage) throws CorruptIndexException, IOException, ParseException {
 		return searchDocuments(typeStr, querystr, null, hitsPerPage);
 	}
