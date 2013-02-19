@@ -4,7 +4,7 @@ package com.bdt.kiradb;
  * A field is a member of a record. Each field has two parts, a name and a value,
  * where the value is of a specified type
  * 
- * @author David Beckemeyer
+ * @author David Beckemeyer and Mark Petrovic
  *
  */
 public class Field {

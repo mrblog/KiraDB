@@ -10,7 +10,7 @@ import java.util.List;
  * Each field has a name, a type, and a value.
  * A Record may be configured to store user-defined objects, in which case the object is returned with query results.
  * 
- * @author David Beckemeyer
+ * @author David Beckemeyer and Mark Petrovic
  *
  */
 public class RecordDescriptor {

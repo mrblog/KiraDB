@@ -3,7 +3,7 @@ package com.bdt.kiradb;
 /**
  * An abstraction for a field type. Instances are immutable.
  * 
- * @author David Beckemeyer
+ * @author David Beckemeyer and Mark Petrovic
  *
  */
 public enum FieldType {
