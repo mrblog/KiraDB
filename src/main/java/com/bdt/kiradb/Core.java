@@ -218,9 +218,10 @@ public class Core {
             } else {
             	// if object not returned, then return fields as key,value pairs
             	HashMap<String, String> results = new HashMap<String,String>();
+            	results.put(r.getPrimaryKeyName(), (String)d.get(key));
             	if (r.descriptor().getFields() != null) {
             		for (Field f : r.descriptor().getFields()) {
-            			results.put(f.getName(), d.get(f.getName()));
+            			results.put(f.getName(), (String)d.get(f.getName()));
             		}
             	}
             	return results;
