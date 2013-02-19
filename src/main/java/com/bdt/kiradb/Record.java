@@ -10,7 +10,20 @@ public interface Record {
 
 	/**
 	 * 
-	 * @return RecordDescriptor record descriptor for Class
+	 * @return RecordDescriptor The record descriptor for Class
 	 */
 	RecordDescriptor descriptor();
+	
+	/**
+	 * 
+	 * @return String The Record name (table name)
+	 */
+	String getRecordName();
+	
+	/**
+	 * 
+	 * @return String The primary key Name
+	 */
+	String getPrimaryKeyName();
+	
 }

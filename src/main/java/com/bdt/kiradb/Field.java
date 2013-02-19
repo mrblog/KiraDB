@@ -25,6 +25,17 @@ public class Field {
 		setType(type);
 		setValue(value);
 	}
+	
+	/**
+	 * Create a Field specifying its name and type
+	 * 
+	 * @param name The name of the field
+	 * @param type The field type (type of value)
+	 */
+	public Field(String name, FieldType type) {
+		setName(name);
+		setType(type);
+	}
 	/**
 	 * Set the field name
 	 * 
