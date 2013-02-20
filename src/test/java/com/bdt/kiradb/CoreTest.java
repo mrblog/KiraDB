@@ -2,6 +2,8 @@ package com.bdt.kiradb;
 
 import com.bdt.kiradb.mykdbapp.Expense;
 import com.bdt.kiradb.mykdbapp.Person;
+import com.bdt.kiradb.mykdbapp.TextDocument;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -135,7 +137,7 @@ public class CoreTest {
         FileUtils.deleteDirectory(directory);
     }
 
-/*
+
     @Test
     public void testCACMOneDoc() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
     	TextDocument doc = new TextDocument();
@@ -155,7 +157,7 @@ public class CoreTest {
         }
 
     }
-*/
+
 
 /*
     @Test
