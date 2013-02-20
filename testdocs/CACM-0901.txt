@@ -1,0 +1,14 @@
+
+
+Difference Expression Coefficients (Algorithm 79)
+
+CACM March, 1963
+
+Clark, E. S.
+
+CA630319 JB March 14, 1978  1:24 PM
+
+901	5	901
+901	5	901
+901	5	901
+
