@@ -24,6 +24,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.Version;
+import org.jets3t.service.ServiceException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,7 +42,7 @@ import java.util.logging.Logger;
 
 /**
  * The Core KiraDB API
- *
+ * 
  * @author David Beckemeyer and Mark Petrovic
  *
  */
@@ -57,7 +58,8 @@ public class Core {
 
     private int totalHits;
 
-
+    private BackingStore backingStore;
+    
 	public Core(String indexPath) {
 		this.indexPath = indexPath;
 		xstream = new XStream();
@@ -96,9 +98,9 @@ public class Core {
 	 * @param object
 	 * @throws IOException
 	 * @throws InterruptedException
-	 * @throws KiraCorruptIndexException
+	 * @throws KiraException 
 	 */
-	public void storeObject(Object object) throws IOException, InterruptedException, KiraCorruptIndexException {
+	public void storeObject(Object object) throws IOException, InterruptedException, KiraException {
 		Record r = (Record)object;
 		RecordDescriptor dr = r.descriptor();
 
@@ -125,7 +127,7 @@ public class Core {
 		}
 
 		// Write the object if that's what we're doing
-		if (dr.getStoreObjects()) {
+		if ((dr.getStoreMode() & RecordDescriptor.STORE_MODE_INDEX) != 0) {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos;
 
@@ -142,6 +144,13 @@ public class Core {
             		org.apache.lucene.document.Field.Index.NO));
 
 
+		}
+		// Also pass through to the Backing Store if so requested
+		if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
+    		if (this.backingStore == null) {
+    			throw new KiraException("STORE_MODE_BACKING but no backing store set");
+    		}
+    		this.backingStore.storeObject(xstream, object);    		
 		}
 		// Set the primary key as the Term for the object
 		Term t = null;
@@ -207,20 +216,8 @@ public class Core {
         Object result = null;
         if (tdocs.next()) {
         	Document d = ir.document(tdocs.doc());
-        	if (r.descriptor().getStoreObjects()) {
-            	String obj = d.get("object");
-
-            	ByteArrayInputStream fis = new ByteArrayInputStream(obj.getBytes("UTF-8"));
-
-            	ObjectInputStream ois;
-
-            	ois = xstream.createObjectInputStream(fis);
-
-            	result = ois.readObject();
-
-            	ois.close();
-            } else {
-            	// if object not returned, then return fields as key,value pairs
+        	if (r.descriptor().getStoreMode() == RecordDescriptor.STORE_MODE_NONE) {
+        		// if object not returned, then return fields as key,value pairs
             	HashMap<String, String> results = new HashMap<String,String>();
             	results.put(r.getPrimaryKeyName(), (String)d.get(key));
             	if (r.descriptor().getFields() != null) {
@@ -231,7 +228,28 @@ public class Core {
             		}
             	}
             	result = results;
-            }
+            	
+            	
+        	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_INDEX) != 0) {
+        		String obj = d.get("object");
+
+
+        		ByteArrayInputStream fis = new ByteArrayInputStream(obj.getBytes("UTF-8"));
+
+        		ObjectInputStream ois;
+
+        		ois = xstream.createObjectInputStream(fis);
+
+        		result = ois.readObject();
+
+        		ois.close();
+        	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
+        		if (this.backingStore == null) {
+        			throw new KiraException("STORE_MODE_BACKING but no backing store set");
+        		}
+        		result = this.backingStore.retrieveObject(xstream, object, d.get(key));
+
+        	}
         }
         tdocs.close();
         ir.close();
@@ -308,26 +326,37 @@ public class Core {
 		}
 		List<Object> results = new ArrayList<Object>();
         if (docs.size() > 0) {
-        	if (r.descriptor().getStoreObjects()) {
-                for (Document d: docs) {
-                	String obj = d.get("object");
-                    
-                    ByteArrayInputStream fis = new ByteArrayInputStream(obj.getBytes("UTF-8"));
-
-                    ObjectInputStream ois;
-
-                    ois = xstream.createObjectInputStream(fis);
-
-                    results.add(ois.readObject());
-                    ois.close();
-
-                }
-        	} else {
+        	if (r.descriptor().getStoreMode() == RecordDescriptor.STORE_MODE_NONE) {
         		// if objects are not stored in the index, return list of matching primary keys
                 for (Document d: docs) {
                 	results.add(d.get(key));
                 }
+        	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_INDEX) != 0) {
+
+        		for (Document d: docs) {
+        			String obj = d.get("object");
+
+        			ByteArrayInputStream fis = new ByteArrayInputStream(obj.getBytes("UTF-8"));
+
+        			ObjectInputStream ois;
+
+        			ois = xstream.createObjectInputStream(fis);
+
+        			results.add(ois.readObject());
+        			ois.close();
+
+        		}
+        	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
+        		if (this.backingStore == null) {
+        			throw new KiraException("STORE_MODE_BACKING but no backing store set");
+        		}
+        		for (Document d: docs) {
+        			Object result = this.backingStore.retrieveObject(xstream, object, d.get(key));
+					results.add(result);
+        		}
+        		
         	}
+        	
         }
         return results;
 	}
@@ -532,5 +561,12 @@ public class Core {
         File directory = new File(indexPath);
         FileUtils.deleteDirectory(directory);
     }
+
+
+	public Core setBackingStore(BackingStore backingStore) {
+		this.backingStore = backingStore;
+		return this;
+	}
+
 
 }

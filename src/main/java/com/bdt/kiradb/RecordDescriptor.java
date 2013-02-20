@@ -15,19 +15,23 @@ import java.util.List;
  */
 public class RecordDescriptor {
 
+	public static int STORE_MODE_NONE = 0;
+	public static int STORE_MODE_INDEX = 1;
+	public static int STORE_MODE_BACKING = 2;
+
 	private String recordName;
 	private Field primaryKey;
 	private List<Field> fields;
-	private Boolean	storeObjects;
+	private int storeMode;
 	
-	/**
+		/**
 	 * Construct a RecordDescriptor with the given name, with default object store mode (false)
 	 * 
 	 * @param recordName The globally unique name identifying this record class (table) 
 	 */
 	public RecordDescriptor(String recordName) {
 		setRecordName(recordName);
-		setStoreObjects(false);
+		setStoreMode(STORE_MODE_NONE);
 	}
 	/**
 	 * Construct a RecordDescriptor with the given name and object store mode
@@ -37,7 +41,7 @@ public class RecordDescriptor {
 	 */
 	public RecordDescriptor(String recordName, Boolean storeObjects) {
 		setRecordName(recordName);
-		setStoreObjects(storeObjects);
+		setStoreMode(STORE_MODE_NONE);
 	}
 	/**
 	 * Construct a RecordDescriptor with the given name and primary key using default object store mode (false)
@@ -48,7 +52,7 @@ public class RecordDescriptor {
 	public RecordDescriptor(String recordName, Field primaryKey) {
 		setRecordName(recordName);
 		setPrimaryKey(primaryKey);
-		setStoreObjects(false);
+		setStoreMode(STORE_MODE_NONE);
 	}
 	/**
 	 * Construct a RecordDescriptor with the given name and primary key and object store mode
@@ -60,7 +64,7 @@ public class RecordDescriptor {
 	public RecordDescriptor(String recordName, Field primaryKey, Boolean storeObjects) {
 		setRecordName(recordName);
 		setPrimaryKey(primaryKey);
-		setStoreObjects(storeObjects);
+		setStoreMode(STORE_MODE_NONE);
 	}
 	/**
 	 * Set unique record name (table name)
@@ -129,20 +133,26 @@ public class RecordDescriptor {
 		return null;
 	}
 	/**
-	 * Set the store object mode on the record
+	 * Set the mode for storing objects
+	 * <p>
+	 * Bitmask
+	 * <p>
+	 * <ul><li>STORE_MODE_NONE - objects are not stored</li>
+	 * <li>STORE_MODE_INDEX - objects are stored in the Index</li>
+	 * <li>STORE_MODE_BACKING - objects are stored in the active backing store</li>
+	 * </ul>
 	 * 
-	 * @param storeObjects Set to true to store objects, false otherwise
+	 * @param storeMode
 	 */
-	public void setStoreObjects(Boolean storeObjects) {
-		this.storeObjects = storeObjects;
+	public void setStoreMode(int storeMode) {
+		this.storeMode = storeMode;
 	}
 	/**
-	 * The store object mode of the record
 	 * 
-	 * @return Boolean The store object mode of the record
+	 * @return The mode for storing objects
 	 */
-	public Boolean getStoreObjects() {
-		return storeObjects;
+	public int getStoreMode() {
+		return storeMode;
 	}
 	
 }

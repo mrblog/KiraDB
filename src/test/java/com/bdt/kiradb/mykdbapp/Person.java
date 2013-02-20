@@ -23,7 +23,7 @@ public class Person implements Record {
         RecordDescriptor dr = new RecordDescriptor(RECORD_NAME);
         dr.setPrimaryKey(new Field(PRIMARY_KEY, FieldType.STRING, getAccount()));
         dr.addField(new Field(DATE, FieldType.DATE, getCreatedAt()));
-        dr.setStoreObjects(true);
+        dr.setStoreMode(RecordDescriptor.STORE_MODE_INDEX);
         return dr;
     }
 
