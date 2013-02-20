@@ -1,9 +1,19 @@
 package com.bdt.kiradb;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 
+import com.bdt.kiradb.mykdbapp.TextDocument;
+
+import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 public class CACMDocTest {
     Core db;
@@ -22,7 +32,7 @@ public class CACMDocTest {
         db.deleteIndex();
     }
 
-/*
+
     @Test
     public void testCACMAllDocs() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
     	File dir = new File("testdocs");
@@ -87,6 +97,6 @@ public class CACMDocTest {
 
 
     }
-*/
+
 
 }
