@@ -52,7 +52,7 @@ public class S3BackingStoreTest {
         System.out.println("Writing person...");
         db.storeObject(p);
         System.out.println("Reading person...");
-        Person np = (Person) db.retrieveObjectbyPrimaryKey(p, p.getAccount());
+        Person np = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());
         System.out.println("Read object: " + np.getName());
         assertNotNull("The result should not be null", np);
         assertEquals("The person's name when read is not the same as when written", p.getName(), np.getName());

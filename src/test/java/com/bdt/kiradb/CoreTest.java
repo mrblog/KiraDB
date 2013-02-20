@@ -47,7 +47,7 @@ public class CoreTest {
         System.out.println("Writing person...");
         db.storeObject(p);
         System.out.println("Reading person...");
-        Person np = (Person) db.retrieveObjectbyPrimaryKey(p, p.getAccount());
+        Person np = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());
         System.out.println("Read object: " + np.getName());
         assertNotNull("The result should not be null", np);
         assertEquals("The person's name when read is not the same as when written", p.getName(), np.getName());
@@ -75,7 +75,7 @@ public class CoreTest {
         db.storeObject(exp2);
         
         System.out.println("Reading expense... 1");
-        Map<String,String> res1 = (Map<String, String>) db.retrieveObjectbyPrimaryKey(exp1, exp1.getTxId());
+        Map<String,String> res1 = (Map<String, String>) db.retrieveObjectByPrimaryKey(exp1, exp1.getTxId());
         assertNotNull("The result should not be null", res1);
 
         db.dumpDocuments(exp1.getRecordName());
@@ -87,7 +87,7 @@ public class CoreTest {
 
         System.out.println("Reading expense... 2");
 
-        Map<String,String> res2 = (Map<String, String>) db.retrieveObjectbyPrimaryKey(exp2, exp2.getTxId());
+        Map<String,String> res2 = (Map<String, String>) db.retrieveObjectByPrimaryKey(exp2, exp2.getTxId());
         assertNotNull("The result should not be null", res2);
         for (String key : res2.keySet()) {
         	System.out.println("  2 key: " + key + " value: "
@@ -130,7 +130,7 @@ public class CoreTest {
         System.out.println("Writing person...");
         db.storeObject(p);
         System.out.println("Reading person...");
-        Person np = (Person) db.retrieveObjectbyPrimaryKey(p, p.getAccount());
+        Person np = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());
         System.out.println("Read object: " + np.getName());
         assertNotNull("The result should not be null", np);
         assertEquals("The person's name when read is not the same as when written", p.getName(), np.getName());

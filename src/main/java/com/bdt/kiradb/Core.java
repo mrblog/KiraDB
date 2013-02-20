@@ -207,7 +207,7 @@ public class Core {
 	 * @throws ClassNotFoundException
 	 * @throws KiraException
 	 */
-	public Object retrieveObjectbyPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException {
+	public Object retrieveObjectByPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException {
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
         File indexDir = new File(indexPath);
