@@ -18,7 +18,7 @@ public class S3BackingStoreTest {
 
     @Before
     public void setup() throws KiraCorruptIndexException, IOException {
-        db = new Core("/tmp/testdb");
+        db = new Core(Utils.makeTemporaryDirectory().getAbsolutePath());
         db.createIndex();
     }
 
