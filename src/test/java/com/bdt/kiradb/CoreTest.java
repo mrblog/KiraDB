@@ -12,11 +12,13 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class CoreTest {
     Core db;
@@ -158,6 +160,73 @@ public class CoreTest {
 
     }
 
+    @Test
+    public void testRelated() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
+    	Map<String,String> sourceDocs = new HashMap<String,String>();
+    	sourceDocs.put("CACM-0212", "Bisection Routine (Algorithm 4)");
+    	sourceDocs.put("CACM-0213", "Numerical Inversion of Laplace Transforms");
+    	sourceDocs.put("CACM-0214", "An Algorithm Defining ALGOL Assignment Statements");
+    	sourceDocs.put("CACM-0215", "The Execute Operations-A Fourth Mode of Instruction Sequencing");
+    	sourceDocs.put("CACM-0216", "A Note on the Use of the Abacus in Number Conversion");
+    	sourceDocs.put("CACM-0217", "Soviet Computer Technology-1959");
+    	sourceDocs.put("CACM-0218", "Computer Preparation of a Poetry Concordance");
+    	sourceDocs.put("CACM-0219", "Marriage-with Problems");
+    	sourceDocs.put("CACM-0220", "A New Method of Computation of Square Roots Without Using Division");
+    	sourceDocs.put("CACM-0221", "The Basic Side of Tape Labeling");
+    	sourceDocs.put("CACM-0222", "Coding Isomorphisms");
+    	sourceDocs.put("CACM-0223", "Selfcipher: Programming");
+    	sourceDocs.put("CACM-0224", "Sequential Formula Translation");
+    	sourceDocs.put("CACM-0225", "A Techniquefor Handling Macro Instructions (Corrigendum)");
+    	sourceDocs.put("CACM-0226", "Solution of Polynomial Equation by");
+    	sourceDocs.put("CACM-0227", "ROOTFINDER (Algorithm 2)");
+    	sourceDocs.put("CACM-0228", "QUADI (Algorithm 1)");
+    	sourceDocs.put("CACM-0229", "A Terminology Proposal");
+    	sourceDocs.put("CACM-0230", "A Proposal for Character Code Compatibility");
+    	sourceDocs.put("CACM-0231", "A Proposal for a Set of Publication Standards for Use by the ACM");
+
+    	Map<String,String[]>expectedResults = new HashMap<String,String[]>();
+    	expectedResults.put("CACM-0231", new String[] { "CACM-0229", "CACM-0216", "CACM-0230"});
+    	expectedResults.put("CACM-0230", new String[] { "CACM-0222", "CACM-0229", "CACM-0231"});
+    	expectedResults.put("CACM-0214", new String[] { "CACM-0228", "CACM-0227", "CACM-0212"});
+    	expectedResults.put("CACM-0212", new String[] { "CACM-0228", "CACM-0227", "CACM-0214"});
+    	expectedResults.put("CACM-0228", new String[] { "CACM-0227", "CACM-0212", "CACM-0214"});
+    	expectedResults.put("CACM-0227", new String[] { "CACM-0228", "CACM-0212", "CACM-0214"});
+    	expectedResults.put("CACM-0218", new String[] { "CACM-0217"});
+    	expectedResults.put("CACM-0217", new String[] { "CACM-0218"});
+    	expectedResults.put("CACM-0229", new String[] { "CACM-0230", "CACM-0231"});
+    	expectedResults.put("CACM-0216", new String[]{ "CACM-0231"});
+
+    	for (String docId : sourceDocs.keySet()) {
+    	   	TextDocument doc = new TextDocument();
+        	doc.setDocId(docId);
+        	doc.setTitle(sourceDocs.get(docId));
+        	// body is a copy of the title, but indexed full-text
+        	doc.setBody(sourceDocs.get(docId));
+
+            db.storeObject(doc);
+
+    	}
+    	String[] fieldNames = { TextDocument.BODY };
+    	for (String docId : sourceDocs.keySet()) {
+    		String testStr = sourceDocs.get(docId);
+    		List<String> matches = db.relatedObjects(new TextDocument(), testStr, fieldNames, 5, docId);
+            assertNotNull("The relatedObjects query result should not be null", matches);
+            System.out.println("'" + testStr + "' hits: " + matches.size());
+            String[] expectedDocs = expectedResults.get(docId);
+            if (expectedDocs != null) {
+            	assertEquals("Expected " + expectedDocs.length + " hits on " + docId, matches.size(), expectedDocs.length);
+            	for (String hit: expectedDocs ) {
+            		assertTrue("Expected " + hit + " in results for " + docId, matches.contains(hit));
+            	}
+            } else {
+            	assertTrue("Expected zero hits on " + docId, (matches.size() == 0));
+            }
+    		/*for (String hit : matches) {
+                System.out.println(docId + " ~ " + hit + " '" + sourceDocs.get(hit) + "'");
+
+    		}*/
+    	}
+    }
 
 /*
     @Test

@@ -19,12 +19,13 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.search.similar.MoreLikeThis;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.Version;
-import org.jets3t.service.ServiceException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,6 +33,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -377,6 +380,62 @@ public class Core {
         	}
         }
 	}
+	
+	/**
+	 * Find related (similar) documents based on given value and fields to examine
+	 * 
+	 * @param r The Record Object (Document Class)
+	 * @param testStr The input value to use as the basis for similarity
+	 * @param fieldNames The names of the fields to examine
+	 * @param numHits The number of similar documents to retrieve
+	 * @param excludeDocId Optional "primary key" to exclude from results
+	 * 
+	 * @return List<String> The list of matching records primary keys
+	 * 
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws KiraException
+	 */
+	
+	public List<String> relatedObjects(Record r, String testStr, String[] fieldNames, int numHits, String excludeDocId) throws IOException, ClassNotFoundException, KiraException {
+        String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
+
+		List<String> results = new ArrayList<String>();
+        File indexDir = new File(indexPath);
+        FSDirectory idx;
+        idx = FSDirectory.open(indexDir);
+		
+        IndexReader ir = IndexReader.open(idx);
+        IndexSearcher is = new IndexSearcher(idx, true);
+        MoreLikeThis mlt = new MoreLikeThis(ir);
+        
+      //lower some settings to MoreLikeThis will work with very short titles
+        mlt.setMinTermFreq(1);
+        mlt.setMinDocFreq(1);
+        mlt.setMinWordLen(3);
+        //String[] fieldNames = { "fulltext" };
+        mlt.setFieldNames(fieldNames );
+        Reader reader = new StringReader(testStr);
+        Query query = mlt.like( reader);
+      //Search the index using the query and get the top 5 results
+        TopDocs topDocs = is.search(query, numHits);
+        //logger.info("found " + topDocs.totalHits + " topDocs for q:" + testStr);
+        for ( ScoreDoc scoreDoc : topDocs.scoreDocs ) {
+        	Document doc = is.doc( scoreDoc.doc );
+        	String docId =  doc.get(key);
+        	if (docId != null) {
+        		if (excludeDocId == null || !docId.equals(excludeDocId)) {
+        			results.add(docId);
+        		}
+        	} else {
+        		logger.warning("found other document type? " + doc);
+        	}
+        }
+        is.close();
+		return results;
+	}
+
+	
 	
 	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, int hitsPerPage) throws CorruptIndexException, IOException, ParseException {
 		return searchDocuments(typeStr, querystr, fullText, null, hitsPerPage);
