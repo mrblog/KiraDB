@@ -47,7 +47,6 @@ public class CACMDocTest {
 
     	int nDocs = 0;
     	for (File f : files) {
-    		nDocs++;
         	//System.out.println("Found document: " + f.getName());
         	String baseName = f.getName();
         	final int lastPeriodPos = baseName.lastIndexOf('.');
