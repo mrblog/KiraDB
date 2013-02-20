@@ -2,25 +2,19 @@ package com.bdt.kiradb;
 
 import com.bdt.kiradb.mykdbapp.Expense;
 import com.bdt.kiradb.mykdbapp.Person;
-import com.bdt.kiradb.mykdbapp.TextDocument;
-
 import org.apache.commons.io.FileUtils;
-import org.apache.lucene.queryParser.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class CoreTest {
     Core db;
@@ -140,7 +134,6 @@ public class CoreTest {
         File directory = new File(p.getRecordName());
         FileUtils.deleteDirectory(directory);
     }
-
     @Test
     public void testCACMOneDoc() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
     	TextDocument doc = new TextDocument();
