@@ -496,7 +496,8 @@ public class Core {
 					org.apache.lucene.document.Field.Index.NOT_ANALYZED));
 			break;
 		case FULLTEXT:
-			StringBuffer finalFulltext = new StringBuffer((String)f.getValue());
+			String ss = (String)f.getValue();
+			StringBuffer finalFulltext = new StringBuffer(ss.toLowerCase());
             finalFulltext.append("\n");
             finalFulltext.append(Stemmer.stemString((String)f.getValue(), StandardAnalyzer.STOP_WORDS_SET));
             doc.add(new org.apache.lucene.document.Field(key, finalFulltext.toString(),

@@ -33,7 +33,7 @@ public class FileBackingStore extends BackingStore {
 	    if (!exists) {
 		    boolean status;
 	    	status = new File(odir).mkdirs();
-	    	logger.info("lock: " + group + "/" + key + " dir " + odir + " " + (status ? "success" : "failure"));
+	    	//logger.info("lock: " + group + "/" + key + " dir " + odir + " " + (status ? "success" : "failure"));
 	    }
 	    //logger.info("lock: " + odir + "/" + key);
 	    File lockfile = new File(odir, key);
@@ -93,7 +93,7 @@ public class FileBackingStore extends BackingStore {
 			if (!exists) {
 				boolean status;
 				status = new File(odir).mkdir();
-				logger.info(odir + " " + (status ? "success" : "failure"));
+				//logger.info(odir + " " + (status ? "success" : "failure"));
 			}
 			try {
 				fos = new FileOutputStream(rootpath + "/" + key);
@@ -112,9 +112,8 @@ public class FileBackingStore extends BackingStore {
 				}
 				oos.close();
 			} catch (Exception e) {
-				e.printStackTrace();
 				logger.severe("failed to store Object " + key);
-				throw new KiraException("storeBattle: " +"failed to store Object " + key);
+				throw new KiraException("storeObject: failed to store Object " + key + " error: " + e.getMessage());
 
 			}
 		} finally {
