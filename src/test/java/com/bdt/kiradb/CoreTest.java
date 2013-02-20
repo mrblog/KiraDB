@@ -134,6 +134,8 @@ public class CoreTest {
         File directory = new File(p.getRecordName());
         FileUtils.deleteDirectory(directory);
     }
+
+/*
     @Test
     public void testCACMOneDoc() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
     	TextDocument doc = new TextDocument();
@@ -153,6 +155,7 @@ public class CoreTest {
         }
 
     }
+*/
 
 /*
     @Test

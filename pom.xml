@@ -39,6 +39,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/CACMDocTest.java</exclude>
+                        <exclude>**/S3BackingStoreTest.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>
