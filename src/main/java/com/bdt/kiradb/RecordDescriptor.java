@@ -113,6 +113,22 @@ public class RecordDescriptor {
 		return fields;
 	}
 	/**
+	 * Get Field by name
+	 * 
+	 * @param name The name of the field
+	 * 
+	 * @return Field The matching field, or null
+	 */
+	public Field getFieldByName(String name) {
+		if (fields != null) {
+			for (Field f: fields) {
+				if (f.getName().equals(name))
+					return f;
+			}
+		}
+		return null;
+	}
+	/**
 	 * Set the store object mode on the record
 	 * 
 	 * @param storeObjects Set to true to store objects, false otherwise
