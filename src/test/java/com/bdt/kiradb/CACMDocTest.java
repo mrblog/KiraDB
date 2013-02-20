@@ -86,8 +86,12 @@ public class CACMDocTest {
     	}
         System.out.println("Indexed docs: " + nDocs);
 
-
+        long startTime = System.nanoTime();
     	List<Object> qResults = db.executeQuery(new TextDocument(), TextDocument.BODY, "system", Integer.MAX_VALUE, 0, null, true);
+    	long endTime = System.nanoTime();
+
+        long duration = endTime - startTime;
+    	System.out.println("Query duration: " + duration/1000000000.0f + "s"); 
 
         assertNotNull("The CACM query result should not be null", qResults);
         System.out.println("Matched docs: " + qResults.size());
