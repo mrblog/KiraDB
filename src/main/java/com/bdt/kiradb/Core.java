@@ -118,7 +118,9 @@ public class Core {
 		// Add the other fields
 		if (dr.getFields() != null) {
 			for (Field f : dr.getFields()) {
-				addField(doc, dr, f);
+				// fields are optional, do not store null fields
+				if (f.getValue() != null)
+					addField(doc, dr, f);
 			}
 		}
 
@@ -223,7 +225,9 @@ public class Core {
             	results.put(r.getPrimaryKeyName(), (String)d.get(key));
             	if (r.descriptor().getFields() != null) {
             		for (Field f : r.descriptor().getFields()) {
-            			results.put(f.getName(), (String)d.get(f.getName()));
+            			// return all existing fields
+            			if (d.get(f.getName()) != null)
+            				results.put(f.getName(), (String)d.get(f.getName()));
             		}
             	}
             	result = results;
@@ -232,58 +236,6 @@ public class Core {
         tdocs.close();
         ir.close();
         return result;
-	}
-
-	/**
-	 * Retrieve an object (record) by primary key
-	 *
-	 * @param object
-	 * @param value
-	 *
-	 * @return Object or HashMap<String, String> of fields
-	 *
-	 * @throws IOException
-	 * @throws ClassNotFoundException
-	 * @throws KiraException
-	 */
-	public Object retrieveObjectbyPrimaryKeyBySearch(Object object, String value) throws IOException, ClassNotFoundException, KiraException {
-		Record r = (Record)object;
-        String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
-
-        List<Document> docs;
-		try {
-			docs = searchDocuments(r.getRecordName(), key + ":" + value, 1);
-		} catch (ParseException e) {
-			throw new KiraException("ParseException " + e.getMessage());
-		}
-        if (docs.size() > 0) {
-            Document d = docs.get(0);
-            if (r.descriptor().getStoreObjects()) {
-            	String obj = d.get("object");
-
-            	ByteArrayInputStream fis = new ByteArrayInputStream(obj.getBytes("UTF-8"));
-
-            	ObjectInputStream ois;
-
-            	ois = xstream.createObjectInputStream(fis);
-
-            	Object result = ois.readObject();
-
-            	ois.close();
-            	return result;
-            } else {
-            	// if object not returned, then return fields as key,value pairs
-            	HashMap<String, String> results = new HashMap<String,String>();
-            	results.put(r.getPrimaryKeyName(), (String)d.get(key));
-            	if (r.descriptor().getFields() != null) {
-            		for (Field f : r.descriptor().getFields()) {
-            			results.put(f.getName(), (String)d.get(f.getName()));
-            		}
-            	}
-            	return results;
-            }
-        }
-        return null;
 	}
 
 	/**
@@ -298,22 +250,55 @@ public class Core {
 	 * @param reverse Set to true to reverse the sort order
 	 * 
 	 * @return List<Object> list of matching objects or list of matching keys
+
+	 */
+
+	public List<Object> executeQuery(Object object, String queryFieldName, String querystr, int hitsPerPage, int skipDocs, String sortFieldName, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
+		Field queryField = null;
+		Record r = (Record)object;
+		if (queryFieldName != null) {
+			queryField = r.descriptor().getFieldByName(queryFieldName);
+		}
+		Field sortField =null;
+		if (sortFieldName != null) {
+			sortField = r.descriptor().getFieldByName(sortFieldName);
+		}
+		return executeQuery(object, queryField, querystr, hitsPerPage, skipDocs, sortField, reverse);
+	}
+	/**
+	 * Query for matching records
+	 * 
+	 * @param object An instance of the Class / Record
+	 * @param queryField The field to query
+	 * @param querystr The query string
+	 * @param hitsPerPage The number of records to return
+	 * @param skipDocs The number of records to skip
+	 * @param sortField Optional sort field or null
+	 * @param reverse Set to true to reverse the sort order
+	 * 
+	 * @return List<Object> list of matching objects or list of matching keys
 	 * 
 	 * @throws KiraException
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public List<Object> executeQuery(Object object, String queryFieldName, String querystr, int hitsPerPage, int skipDocs, String sortFieldName, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
+	public List<Object> executeQuery(Object object, Field queryField, String querystr, int hitsPerPage, int skipDocs, Field sortField, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
 		List<Document> docs;
 		Record r = (Record)object;
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
         
         Sort sortBy = null;
-        if (sortFieldName != null)
-        	sortBy = new Sort(new SortField(sortFieldName, SortField.STRING, reverse));
-
+        if (sortField != null) {
+        	sortBy = new Sort(new SortField(sortField.getName(), SortField.STRING, reverse));
+        }
+        String queryFieldName = null;
+        Boolean fullText = false;
+        if (queryField != null) {
+        	queryFieldName = queryField.getName();
+        	fullText = (queryField.getType() == FieldType.FULLTEXT);
+        }
 		try {
-			docs = searchDocuments(r.getRecordName(), queryFieldName + ":" + querystr, sortBy, hitsPerPage, skipDocs);
+			docs = searchDocuments(r.getRecordName(), queryFieldName + ":" + querystr, fullText, sortBy, hitsPerPage, skipDocs);
 		} catch (ParseException e) {
 			throw new KiraException("ParseException " + e.getMessage());
 		} catch (CorruptIndexException e) {
@@ -338,6 +323,7 @@ public class Core {
 
                 }
         	} else {
+        		// if objects are not stored in the index, return list of matching primary keys
                 for (Document d: docs) {
                 	results.add(d.get(key));
                 }
@@ -350,7 +336,7 @@ public class Core {
 		List<Document> docs;
 
 		try {
-			docs = searchDocuments(type, null, Integer.MAX_VALUE);
+			docs = searchDocuments(type, null, false, Integer.MAX_VALUE);
 		} catch (ParseException e) {
 			throw new KiraException("ParseException " + e.getMessage());
 		} catch (CorruptIndexException e) {
@@ -365,15 +351,15 @@ public class Core {
         }
 	}
 	
-	private List<Document> searchDocuments(String typeStr, String querystr, int hitsPerPage) throws CorruptIndexException, IOException, ParseException {
-		return searchDocuments(typeStr, querystr, null, hitsPerPage);
+	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, int hitsPerPage) throws CorruptIndexException, IOException, ParseException {
+		return searchDocuments(typeStr, querystr, fullText, null, hitsPerPage);
 	}
-	private List<Document> searchDocuments(String typeStr, String querystr, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException {
-		return searchDocuments(typeStr, querystr, null, hitsPerPage, skipDocs);
+	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException {
+		return searchDocuments(typeStr, querystr, fullText, null, hitsPerPage, skipDocs);
 	}
 
-	private List<Document> searchDocuments(String typeStr, String querystr, Sort sortBy, int hitsPerPage) throws CorruptIndexException, IOException, ParseException {
-		return searchDocuments(typeStr, querystr, sortBy, hitsPerPage, 0);
+	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, Sort sortBy, int hitsPerPage) throws CorruptIndexException, IOException, ParseException {
+		return searchDocuments(typeStr, querystr, fullText, sortBy, hitsPerPage, 0);
 	}
 	/**
 	 * @param typeStr
@@ -385,7 +371,7 @@ public class Core {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	private List<Document> searchDocuments(String typeStr, String querystr, Sort sortBy, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException {
+	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, Sort sortBy, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException {
 
 		// 1. create the index
 		File indexDir = new File(indexPath);
@@ -407,12 +393,12 @@ public class Core {
 		// when no field is explicitly specified in the query.
 		if (querystr != null) {
 			QueryParser parser = null;
-			if (querystr.contains(":")) {
-				KeywordAnalyzer analyzer = new KeywordAnalyzer();
-				parser = new QueryParser(Version.LUCENE_30, "title", analyzer);
-			} else {
+			if (fullText) {
 				StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
 				parser = new QueryParser(Version.LUCENE_30, "fulltext", analyzer);
+			} else {
+				KeywordAnalyzer analyzer = new KeywordAnalyzer();
+				parser = new QueryParser(Version.LUCENE_30, "title", analyzer);
 			}
 			parser.setDefaultOperator(QueryParser.Operator.AND);
 			Query q = parser.parse(querystr);
