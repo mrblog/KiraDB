@@ -107,10 +107,5 @@ public class S3BackingStore extends BackingStore {
         return result;
 	}
 	
-	private String makeKey(Record r) {
-		return makeKey(r, r.getPrimaryKeyName());
-	}
-	private String makeKey(Record r, String value) {
-		return r.getRecordName() + "/" + value;
-	}
+
 }

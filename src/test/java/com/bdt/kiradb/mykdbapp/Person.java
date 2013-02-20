@@ -18,12 +18,18 @@ public class Person implements Record {
     private String name;
     private Date createdAt;
 
+    private int storeMode;
+
+    public Person() {
+        setStoreMode(RecordDescriptor.STORE_MODE_INDEX);
+    }
+    
     @Override
     public RecordDescriptor descriptor() {
         RecordDescriptor dr = new RecordDescriptor(RECORD_NAME);
         dr.setPrimaryKey(new Field(PRIMARY_KEY, FieldType.STRING, getAccount()));
         dr.addField(new Field(DATE, FieldType.DATE, getCreatedAt()));
-        dr.setStoreMode(RecordDescriptor.STORE_MODE_INDEX);
+        dr.setStoreMode(this.getStoreMode());
         return dr;
     }
 
@@ -60,6 +66,12 @@ public class Person implements Record {
     public String getRecordName() {
         return RECORD_NAME;
     }
+	public void setStoreMode(int storeMode) {
+		this.storeMode = storeMode;
+	}
+	public int getStoreMode() {
+		return storeMode;
+	}
 
 
 }

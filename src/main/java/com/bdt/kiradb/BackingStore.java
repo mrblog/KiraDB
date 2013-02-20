@@ -2,7 +2,6 @@ package com.bdt.kiradb;
 
 import java.io.IOException;
 
-import org.jets3t.service.ServiceException;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -12,5 +11,11 @@ public abstract class BackingStore {
 	
 	abstract Object retrieveObject(XStream xstream, Object object, String value) throws KiraException, IOException, ClassNotFoundException;
 
+	protected String makeKey(Record r) {
+		return makeKey(r, (String)r.descriptor().getPrimaryKey().getValue());
+	}
+	protected String makeKey(Record r, String value) {
+		return r.getRecordName() + "/" + value;
+	}
 
 }

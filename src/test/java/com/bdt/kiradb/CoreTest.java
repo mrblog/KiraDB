@@ -112,6 +112,28 @@ public class CoreTest {
 
     }
     
+    @Test
+    public void testFileBackingStore() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
+    	FileBackingStore fs = new FileBackingStore(".");
+    	db.setBackingStore(fs);
+    	Person p = new Person();
+    	p.setStoreMode(RecordDescriptor.STORE_MODE_BACKING);
+        System.out.println("Testing File backing store...");
+
+        p.setAccount("3219");
+        p.setName("Fred Jones");
+        p.setCreatedAt(new Date());
+        System.out.println("Writing person...");
+        db.storeObject(p);
+        System.out.println("Reading person...");
+        Person np = (Person) db.retrieveObjectbyPrimaryKey(p, p.getAccount());
+        System.out.println("Read object: " + np.getName());
+        assertNotNull("The result should not be null", np);
+        assertEquals("The person's name when read is not the same as when written", p.getName(), np.getName());
+
+    }
+    
+    
 /*
     @Test
     public void testSomeResource() {
