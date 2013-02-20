@@ -67,9 +67,8 @@ public class FileBackingStore extends BackingStore {
 	
 
 	@Override
-	public void storeObject(XStream xstream, Object object) throws IOException,
+	public void storeObject(XStream xstream, Record r) throws IOException,
 			KiraException {
-		Record r = (Record)object;
 		if (r.getRecordName().contains("/")) {
 			logger.warning("storeObject: Invalid record name: " + r.getRecordName());
 			throw new KiraException("storeObject: Invalid record name: " + r.getRecordName());
@@ -102,7 +101,7 @@ public class FileBackingStore extends BackingStore {
 				FileLock lock = fos.getChannel().lock();
 
 				try {
-					oos.writeObject(object);
+					oos.writeObject(r);
 					// Flush and close the ObjectOutputStream.
 					//
 					oos.flush();
@@ -123,9 +122,8 @@ public class FileBackingStore extends BackingStore {
 	}
 
 	@Override
-	public Object retrieveObject(XStream xstream, Object object, String value)
+	public Object retrieveObject(XStream xstream, Record r, String value)
 			throws KiraException, IOException, ClassNotFoundException {
-		Record r = (Record)object;
 		String key = makeKey(r, value);
 		
 		File lck = lock(r.getRecordName(), value);

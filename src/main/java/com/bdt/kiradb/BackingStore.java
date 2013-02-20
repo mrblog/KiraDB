@@ -7,9 +7,9 @@ import com.thoughtworks.xstream.XStream;
 
 public abstract class BackingStore {
 	
-	abstract void storeObject(XStream xstream, Object object) throws IOException, KiraException;
+	abstract void storeObject(XStream xstream, Record r) throws IOException, KiraException;
 	
-	abstract Object retrieveObject(XStream xstream, Object object, String value) throws KiraException, IOException, ClassNotFoundException;
+	abstract Object retrieveObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException;
 
 	protected String makeKey(Record r) {
 		return makeKey(r, (String)r.descriptor().getPrimaryKey().getValue());

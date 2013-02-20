@@ -56,15 +56,14 @@ public class S3BackingStore extends BackingStore {
 		return S3error;
 	}
 
-	public void storeObject(XStream xstream, Object object) throws IOException, KiraException {
-		Record r = (Record)object;
+	public void storeObject(XStream xstream, Record r) throws IOException, KiraException {
 		String key = makeKey(r);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream oos;
 
         oos = xstream.createObjectOutputStream(bos);
 
-        oos.writeObject(object);
+        oos.writeObject(r);
         // Flush and close the ObjectOutputStream.
         //
         oos.flush();
@@ -85,8 +84,7 @@ public class S3BackingStore extends BackingStore {
         
 	}
 	
-	public Object retrieveObject(XStream xstream, Object object, String value) throws KiraException, IOException, ClassNotFoundException {
-		Record r = (Record)object;
+	public Object retrieveObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException {
 		String key = makeKey(r, value);
 		
 		S3Object objectComplete;

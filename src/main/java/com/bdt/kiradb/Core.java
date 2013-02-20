@@ -59,6 +59,8 @@ public class Core {
     private int totalHits;
 
     private BackingStore backingStore;
+
+	private String savedQuery;
     
 	public Core(String indexPath) {
 		this.indexPath = indexPath;
@@ -100,8 +102,7 @@ public class Core {
 	 * @throws InterruptedException
 	 * @throws KiraException 
 	 */
-	public void storeObject(Object object) throws IOException, InterruptedException, KiraException {
-		Record r = (Record)object;
+	public void storeObject(Record r) throws IOException, InterruptedException, KiraException {
 		RecordDescriptor dr = r.descriptor();
 
 		Document doc = new Document();
@@ -133,7 +134,7 @@ public class Core {
 
             oos = xstream.createObjectOutputStream(bos);
 
-            oos.writeObject(object);
+            oos.writeObject(r);
             // Flush and close the ObjectOutputStream.
             //
             oos.flush();
@@ -150,7 +151,7 @@ public class Core {
     		if (this.backingStore == null) {
     			throw new KiraException("STORE_MODE_BACKING but no backing store set");
     		}
-    		this.backingStore.storeObject(xstream, object);    		
+    		this.backingStore.storeObject(xstream, r);    		
 		}
 		// Set the primary key as the Term for the object
 		Term t = null;
@@ -203,8 +204,7 @@ public class Core {
 	 * @throws ClassNotFoundException
 	 * @throws KiraException
 	 */
-	public Object retrieveObjectbyPrimaryKey(Object object, String value) throws IOException, ClassNotFoundException, KiraException {
-		Record r = (Record)object;
+	public Object retrieveObjectbyPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException {
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
         File indexDir = new File(indexPath);
@@ -247,7 +247,7 @@ public class Core {
         		if (this.backingStore == null) {
         			throw new KiraException("STORE_MODE_BACKING but no backing store set");
         		}
-        		result = this.backingStore.retrieveObject(xstream, object, d.get(key));
+        		result = this.backingStore.retrieveObject(xstream, r, d.get(key));
 
         	}
         }
@@ -271,9 +271,8 @@ public class Core {
 
 	 */
 
-	public List<Object> executeQuery(Object object, String queryFieldName, String querystr, int hitsPerPage, int skipDocs, String sortFieldName, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
+	public List<Object> executeQuery(Record r, String queryFieldName, String querystr, int hitsPerPage, int skipDocs, String sortFieldName, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
 		Field queryField = null;
-		Record r = (Record)object;
 		if (queryFieldName != null) {
 			queryField = r.descriptor().getFieldByName(queryFieldName);
 		}
@@ -281,7 +280,7 @@ public class Core {
 		if (sortFieldName != null) {
 			sortField = r.descriptor().getFieldByName(sortFieldName);
 		}
-		return executeQuery(object, queryField, querystr, hitsPerPage, skipDocs, sortField, reverse);
+		return executeQuery(r, queryField, querystr, hitsPerPage, skipDocs, sortField, reverse);
 	}
 	/**
 	 * Query for matching records
@@ -300,9 +299,8 @@ public class Core {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public List<Object> executeQuery(Object object, Field queryField, String querystr, int hitsPerPage, int skipDocs, Field sortField, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
+	public List<Object> executeQuery(Record r, Field queryField, String querystr, int hitsPerPage, int skipDocs, Field sortField, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
 		List<Document> docs;
-		Record r = (Record)object;
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
         
         Sort sortBy = null;
@@ -351,7 +349,7 @@ public class Core {
         			throw new KiraException("STORE_MODE_BACKING but no backing store set");
         		}
         		for (Document d: docs) {
-        			Object result = this.backingStore.retrieveObject(xstream, object, d.get(key));
+        			Object result = this.backingStore.retrieveObject(xstream, r, d.get(key));
 					results.add(result);
         		}
         		
@@ -436,6 +434,8 @@ public class Core {
 		Query q1 = new TermQuery(new Term("type", typeStr));
 		booleanQuery.add(q1, org.apache.lucene.search.BooleanClause.Occur.MUST);
 
+		this.setLastQuery(booleanQuery.toString());
+		
 		// 3. search
 		IndexSearcher searcher = new IndexSearcher(index, true);
 		if (sortBy == null)
@@ -443,6 +443,7 @@ public class Core {
 		TopFieldDocs tfd = searcher.search(booleanQuery, null, skipDocs+hitsPerPage, sortBy);
 		ScoreDoc[] hits = tfd.scoreDocs;
 		this.setTotalHits(tfd.totalHits);
+
 		// 4. display results
 		List<Document> results = new ArrayList<Document>();
 		//System.out.println("Found " + hits.length + " hits.");
@@ -567,6 +568,16 @@ public class Core {
 	public Core setBackingStore(BackingStore backingStore) {
 		this.backingStore = backingStore;
 		return this;
+	}
+
+
+	private void setLastQuery(String savedQuery) {
+		this.savedQuery = savedQuery;
+	}
+
+
+	public String getLastQuery() {
+		return savedQuery;
 	}
 
 
