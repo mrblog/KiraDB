@@ -27,9 +27,9 @@ public class CacheBackingStore extends BackingStore {
 	@Override
 	void storeObject(XStream xstream, Record r) {
 		String key = makeKey(r);
-		System.out.println("r: " + r);
-		System.out.println(" primaryKey: " + r.getPrimaryKeyName() + " key: " + key);
-		System.out.println("cache: " + cache);
+		//System.out.println("r: " + r);
+		//System.out.println(" primaryKey: " + r.getPrimaryKeyName() + " key: " + key);
+		//System.out.println("cache: " + cache);
         cache.put(new Element(key, r));
 	}
 
