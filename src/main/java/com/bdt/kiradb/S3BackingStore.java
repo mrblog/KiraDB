@@ -104,6 +104,13 @@ public class S3BackingStore extends BackingStore {
         ois.close();
         return result;
 	}
+
+	@Override
+	void removeObject(XStream xstream, Record r, String value)
+			throws KiraException, IOException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		
+	}
 	
 
 }

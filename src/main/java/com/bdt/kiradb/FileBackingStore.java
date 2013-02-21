@@ -148,4 +148,20 @@ public class FileBackingStore extends BackingStore {
 		return result;
 	}
 
+	public void removeObject(XStream xstream, Record r, String value) throws KiraException {
+		String key = makeKey(r, value);
+		File lck = lock(r.getRecordName(), value);
+		if (lck == null)
+			throw new KiraException("removeObject cannot obtain lock on " + value);
+
+		try {
+                 File f;
+                 f = new File(rootpath + "/" + key);
+                 f.delete();
+
+         } finally {
+                 unlock(lck);
+         }
+
+	}
 }

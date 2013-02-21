@@ -62,15 +62,54 @@ public class Core {
     private int totalHits;
 
     private BackingStore backingStore;
+    private BackingStore cacheStore;
 
 	private String savedQuery;
     
+	/**
+	 * Construct a Core KiraDB instance with specified indexPath
+	 * 
+	 * @param indexPath The index path
+	 */
 	public Core(String indexPath) {
 		this.indexPath = indexPath;
 		xstream = new XStream();
+		try {
+			cacheStore = new CacheBackingStore();
+		} catch (KiraException e) {
+			logger.warning("Cannot setup cache: " + e.getMessage());
+		}
+	}
+	/**
+	 * Construct a Core KiraDB instance with specified indexPath, with cache mode
+	 * @param indexPath The index path
+	 * @param disableCaching Set to true to disable caching
+	 */
+	public Core(String indexPath, Boolean disableCaching) {
+		this.indexPath = indexPath;
+		xstream = new XStream();
+		if (!disableCaching) {
+			try {
+				cacheStore = new CacheBackingStore();
+			} catch (KiraException e) {
+				logger.warning("Cannot setup cache: " + e.getMessage());
+			}
+		} else {
+			cacheStore = null;
+		}
 	}
 
-
+	/**
+	 * Construct a Core KiraDB instance with specified indexPath, with user-supplied caching store
+	 * 
+	 * @param indexPath The index path
+	 * @param cacheStore The user-supplied caching BackingStore
+	 */
+	public Core(String indexPath, BackingStore cacheStore) {
+		this.indexPath = indexPath;
+		xstream = new XStream();
+		this.cacheStore = cacheStore;
+	}
 	private IndexWriter getIndexWriter(File indexDir) throws InterruptedException, IOException, CorruptIndexException {
 		IndexWriter writer = null;
 		int nTries = 0;
@@ -155,6 +194,11 @@ public class Core {
     			throw new KiraException("STORE_MODE_BACKING but no backing store set");
     		}
     		this.backingStore.storeObject(xstream, r);    		
+		
+    		// store in the Cache if active
+    		if (cacheStore != null) {
+    			this.cacheStore.storeObject(xstream, r);
+			}
 		}
 		// Set the primary key as the Term for the object
 		Term t = null;
@@ -234,6 +278,7 @@ public class Core {
             	
             	
         	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_INDEX) != 0) {
+
         		String obj = d.get("object");
 
 
@@ -247,10 +292,18 @@ public class Core {
 
         		ois.close();
         	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
-        		if (this.backingStore == null) {
-        			throw new KiraException("STORE_MODE_BACKING but no backing store set");
+				if (this.backingStore == null) {
+					throw new KiraException("STORE_MODE_BACKING but no backing store set");
+				}
+        		if (cacheStore != null) {
+        			result = cacheStore.retrieveObject(xstream, r, value);
         		}
-        		result = this.backingStore.retrieveObject(xstream, r, d.get(key));
+        		if (result == null) {
+        			result = this.backingStore.retrieveObject(xstream, r, d.get(key));
+        			if (cacheStore != null) {
+        				this.cacheStore.storeObject(xstream, (Record) result);
+        			}
+        		}
 
         	}
         }
@@ -352,7 +405,16 @@ public class Core {
         			throw new KiraException("STORE_MODE_BACKING but no backing store set");
         		}
         		for (Document d: docs) {
-        			Object result = this.backingStore.retrieveObject(xstream, r, d.get(key));
+        			Object result = null;
+        			if (cacheStore != null) {
+            			result = cacheStore.retrieveObject(xstream, r, d.get(key));
+            		}
+            		if (result == null) {
+            			result = this.backingStore.retrieveObject(xstream, r, d.get(key));
+            			if (cacheStore != null) {
+            				this.cacheStore.storeObject(xstream, (Record) result);
+            			}
+            		}
 					results.add(result);
         		}
         		

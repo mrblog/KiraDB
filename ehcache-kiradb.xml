@@ -1,0 +1,9 @@
+<ehcache>
+    <!-- <diskStore path="java.io.tmpdir"/> -->
+    <defaultCache maxElementsInMemory="10" eternal="false"
+                  timeToIdleSeconds="120" timeToLiveSeconds="120" overflowToDisk="false"/>
+
+    <!-- KiraDB -->
+    <cache name="KiraDB" maxElementsInMemory="500" eternal="false"
+           overflowToDisk="false" timeToIdleSeconds="0" timeToLiveSeconds="600"/>
+</ehcache>
