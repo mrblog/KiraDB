@@ -4,7 +4,6 @@ import com.bdt.kiradb.mykdbapp.Person;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -40,7 +39,7 @@ public class S3BackingStoreTest {
     }
 
     @Test
-    @Ignore
+//    @Ignore
     public void testS3BackingStore() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
         if (db == null) {
             return;
