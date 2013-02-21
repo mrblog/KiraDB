@@ -39,7 +39,6 @@ public class S3BackingStoreTest {
     }
 
     @Test
-//    @Ignore
     public void testS3BackingStore() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
         if (db == null) {
             return;
