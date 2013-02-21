@@ -139,7 +139,7 @@ public class Core {
 	 * @param object The object being indexed/written
 	 */
 	/**
-	 * @param object
+	 * @param r
 	 * @throws IOException
 	 * @throws InterruptedException
 	 * @throws KiraException 
@@ -242,7 +242,7 @@ public class Core {
 	/**
 	 * Retrieve an object (record) by primary key
 	 *
-	 * @param object
+	 * @param r
 	 * @param value
 	 *
 	 * @return Object or HashMap<String, String> of fields
@@ -315,7 +315,7 @@ public class Core {
 	/**
 	 * Query for matching records
 	 * 
-	 * @param object An instance of the Class / Record
+	 * @param r An instance of the Class / Record
 	 * @param queryFieldName The name to the field to query
 	 * @param querystr The query string
 	 * @param hitsPerPage The number of records to return
@@ -341,7 +341,7 @@ public class Core {
 	/**
 	 * Query for matching records
 	 * 
-	 * @param object An instance of the Class / Record
+	 * @param r An instance of the Class / Record
 	 * @param queryField The field to query
 	 * @param querystr The query string
 	 * @param hitsPerPage The number of records to return
