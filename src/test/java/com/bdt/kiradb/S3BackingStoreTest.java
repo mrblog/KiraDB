@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class S3BackingStoreTest {
-    private Core db;
+    private KiraDb db;
 
     @Before
     public void setup() throws KiraCorruptIndexException, IOException {

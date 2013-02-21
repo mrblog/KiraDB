@@ -16,12 +16,12 @@ import java.util.Collection;
 import java.util.List;
 
 public class CACMDocTest {
-    Core db;
+    KiraDb db;
 
     // Gets run before each method annotated with @Test
     @Before
     public void setup() throws KiraCorruptIndexException, IOException {
-        db = new Core("KiraDBIndex");
+        db = new KiraDb("KiraDBIndex");
         System.out.println("Creating Index...");
         db.createIndex();
     }

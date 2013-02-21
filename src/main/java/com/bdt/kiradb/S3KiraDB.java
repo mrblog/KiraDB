@@ -4,7 +4,7 @@ package com.bdt.kiradb;
  * Construct an Amazon S3-backed instance of KiraDb.  The constructors require
  * the usual Amazon AWS S3 key, secret, and bucket name.
  */
-public class S3KiraDB extends Core {
+public class S3KiraDB extends KiraDb {
     /**
      * Construct an S3 KiraDB instance with specified indexPath, AWS key, secret, and bucket name.
      *
@@ -54,7 +54,7 @@ public class S3KiraDB extends Core {
      * @param backingStore
      * @return
      */
-    public Core setBackingStore(BackingStore backingStore) {
+    public KiraDb setBackingStore(BackingStore backingStore) {
         return this;
     }
 }

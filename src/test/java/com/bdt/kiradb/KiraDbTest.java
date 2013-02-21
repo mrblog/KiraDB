@@ -22,13 +22,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class CoreTest {
-    Core db;
+public class KiraDbTest {
+    KiraDb db;
 
     // Gets run before each method annotated with @Test
     @Before
     public void setup() throws KiraCorruptIndexException, IOException {
-        db = new Core("KiraDBIndex");
+        db = new KiraDb("KiraDBIndex");
         System.out.println("Creating Index...");
         db.createIndex();
     }

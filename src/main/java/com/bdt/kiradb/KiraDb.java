@@ -49,9 +49,9 @@ import java.util.logging.Logger;
  * @author David Beckemeyer and Mark Petrovic
  *
  */
-public class Core {
+public class KiraDb {
 
-    private Logger logger = Logger.getLogger(Core.class.getName());
+    private Logger logger = Logger.getLogger(KiraDb.class.getName());
 
 	private final static String TYPE_KEY = "type";
 
@@ -71,7 +71,7 @@ public class Core {
 	 * 
 	 * @param indexPath The index path
 	 */
-	public Core(String indexPath) {
+	public KiraDb(String indexPath) {
 		this.indexPath = indexPath;
 		xstream = new XStream();
 		try {
@@ -85,7 +85,7 @@ public class Core {
 	 * @param indexPath The index path
 	 * @param disableCaching Set to true to disable caching
 	 */
-	public Core(String indexPath, Boolean disableCaching) {
+	public KiraDb(String indexPath, Boolean disableCaching) {
 		this.indexPath = indexPath;
 		xstream = new XStream();
 		if (!disableCaching) {
@@ -105,7 +105,7 @@ public class Core {
 	 * @param indexPath The index path
 	 * @param cacheStore The user-supplied caching BackingStore
 	 */
-	public Core(String indexPath, BackingStore cacheStore) {
+	public KiraDb(String indexPath, BackingStore cacheStore) {
 		this.indexPath = indexPath;
 		xstream = new XStream();
 		this.cacheStore = cacheStore;
@@ -697,7 +697,7 @@ public class Core {
      * 
      * @return Core The Core instance (self)
      */
-	public Core setBackingStore(BackingStore backingStore) {
+	public KiraDb setBackingStore(BackingStore backingStore) {
 		this.backingStore = backingStore;
 		return this;
 	}
