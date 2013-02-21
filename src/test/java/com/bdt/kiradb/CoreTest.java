@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class CoreTest {
@@ -134,6 +136,15 @@ public class CoreTest {
         System.out.println("Read object: " + np.getName());
         assertNotNull("The result should not be null", np);
         assertEquals("The person's name when read is not the same as when written", p.getName(), np.getName());
+
+        db.removeObjectByPrimaryKey(p, p.getAccount());
+
+        // presumes underlying knowledge of how the File store works
+        File objectFile = new File(p.getRecordName() + "/" + p.getAccount());
+        assertFalse("The file was not removed properly", objectFile.exists());
+        
+        Person nnp = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());
+        assertNull("The result should be null", nnp);
 
         File directory = new File(p.getRecordName());
         FileUtils.deleteDirectory(directory);

@@ -680,12 +680,23 @@ public class Core {
 		}
 	}
 
+	/**
+	 * Delete the index
+	 * 
+	 * @throws IOException
+	 */
     public void deleteIndex() throws IOException {
         File directory = new File(indexPath);
         FileUtils.deleteDirectory(directory);
     }
 
-
+    /**
+     * Set the backing store to be used
+     *  
+     * @param backingStore
+     * 
+     * @return Core The Core instance (self)
+     */
 	public Core setBackingStore(BackingStore backingStore) {
 		this.backingStore = backingStore;
 		return this;
@@ -696,10 +707,55 @@ public class Core {
 		this.savedQuery = savedQuery;
 	}
 
-
+	/**
+	 * 
+	 * @return String the last query executed
+	 */
 	public String getLastQuery() {
 		return savedQuery;
 	}
+	
+	/**
+	 * Remove specified record
+	 * 
+	 * @param r The Record class
+	 * @param value The primary key value to be removed
+	 * 
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws KiraException
+	 * @throws InterruptedException
+	 */
+	public void removeObjectByPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException, InterruptedException {
+        String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
+        File indexDir = new File(indexPath);
+        
+        Term t = new Term(key, value);
+        
+        IndexWriter writer = getIndexWriter(indexDir);
+        try {
+        	writer.deleteDocuments(t);
+        	writer.commit();
+        } catch (CorruptIndexException e) {
+                throw e;
+        } catch (IOException e) {
+                throw e;
+        } finally {
+                writer.close();
+        }
+
+        if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
+        	if (this.backingStore == null) {
+        		throw new KiraException("STORE_MODE_BACKING but no backing store set");
+        	}
+        	if (cacheStore != null) {
+        		cacheStore.removeObject(xstream, r, value);
+        	}
+        	this.backingStore.removeObject(xstream, r, value);
+
+
+        }
+	}
 
 }
