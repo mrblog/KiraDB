@@ -19,7 +19,8 @@ public class S3KiraDB extends Core {
     }
 
     /**
-     * Construct an S3 KiraDB instance with specified indexPath, AWS key, secret, and bucket name.
+     * Construct an S3 KiraDB instance with specified indexPath, AWS key, secret, and bucket name.  Allow disabling
+     * of backing ehcache.
      *
      * @param indexPath      The index path
      * @param disableCaching cache enabled
@@ -33,10 +34,11 @@ public class S3KiraDB extends Core {
     }
 
     /**
-     * Construct an S3 KiraDB instance with specified indexPath, AWS key, secret, and bucket name.
+     * Construct an S3 KiraDB instance with specified indexPath, AWS key, secret, and bucket name.  Allows for user
+     * supplied caching in the form of a custom BackingStore instance.
      *
      * @param indexPath  The index path
-     * @param cacheStore cacheStore
+     * @param cacheStore cacheStore A user supplied BackingStore instance.f
      * @param awsKey     AWS S3 key
      * @param awsSecret  AWS S3 secret
      * @param awsBucket  AWS S3 bucketname
