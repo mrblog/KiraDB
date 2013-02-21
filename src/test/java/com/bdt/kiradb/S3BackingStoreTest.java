@@ -18,29 +18,31 @@ public class S3BackingStoreTest {
 
     @Before
     public void setup() throws KiraCorruptIndexException, IOException {
-        db = new Core(Utils.makeTemporaryDirectory().getAbsolutePath());
-        db.createIndex();
-    }
-
-    @After
-    public void teardown() throws IOException {
-        db.deleteIndex();
-    }
-
-    @Test
-    public void testS3BackingStore() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
         String key = System.getProperty("aws.key", null);
         String secret = System.getProperty("aws.secret", null);
         String bucket = System.getProperty("aws.bucket", null);
 
         if (key == null || secret == null || bucket == null) {
-            System.out.printf("Skipping S3 backing store test.  One or more of AWS aws.[key|secret|bucket] not set.");
+            System.out.printf("Skipping S3 backing store test.  One or more of AWS System properties aws.[key|secret|bucket] not set.");
+        } else {
+            db = new S3KiraDB(Utils.makeTemporaryDirectory().getAbsolutePath(), key, secret, bucket);
+            db.createIndex();
+            System.out.printf("S3 test:  key=%s, secret=%s, bucket=%s\n", key, secret, bucket);
         }
+    }
 
-        System.out.printf("S3 test:  key=%s, secret=%s, bucket=%s\n", key, secret, bucket);
+    @After
+    public void teardown() throws IOException {
+        if (db != null) {
+            db.deleteIndex();
+        }
+    }
 
-        S3BackingStore fs = new S3BackingStore(key, secret, bucket);
-        db.setBackingStore(fs);
+    @Test
+    public void testS3BackingStore() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
+        if (db == null) {
+            return;
+        }
 
         Person p = new Person();
         p.setStoreMode(RecordDescriptor.STORE_MODE_BACKING);
