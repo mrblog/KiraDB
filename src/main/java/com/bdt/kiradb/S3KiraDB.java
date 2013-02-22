@@ -7,6 +7,19 @@ import java.io.File;
  * the usual Amazon AWS S3 key, secret, and bucket name.
  */
 public class S3KiraDB extends KiraDb {
+
+    /**
+     * Construct an S3 KiraDB instance with specified indexPath.  An /s3.properties file is assumed to be on the classpath
+     * with keys aws.key, aws.secret, and aws.bucket and approriate values.
+     *
+     * @param indexPath      The index path
+     * @param disableCaching cache enabled
+     */
+    public S3KiraDB(File indexPath, Boolean disableCaching) {
+        super(indexPath, disableCaching);
+        super.setBackingStore(new S3BackingStore());
+    }
+
     /**
      * Construct an S3 KiraDB instance with specified indexPath, AWS key, secret, and bucket name.
      *
