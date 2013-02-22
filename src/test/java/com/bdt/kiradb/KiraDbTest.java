@@ -40,7 +40,7 @@ public class KiraDbTest {
     }
 
     @Test
-    public void testPersonStuff() throws KiraException, IOException, ClassNotFoundException, InterruptedException {
+    public void testBasicOperations() throws KiraException, IOException, ClassNotFoundException, InterruptedException {
         // try writing to the index
         Person p = new Person();
         p.setAccount("1234");
@@ -53,11 +53,7 @@ public class KiraDbTest {
         System.out.println("Read object: " + np.getName());
         assertNotNull("The result should not be null", np);
         assertEquals("The person's name when read is not the same as when written", p.getName(), np.getName());
-    }
-
-    @Test
-    public void testExpenseStuff() throws IOException, InterruptedException, ClassNotFoundException, KiraException {
-
+      
     	Expense exp1 = new Expense();
     	exp1.setCategory("Clothing");
         exp1.setDate(new Date());
@@ -131,6 +127,13 @@ public class KiraDbTest {
         p.setCreatedAt(new Date());
         System.out.println("Writing person...");
         db.storeObject(p);
+
+        // presumes underlying knowledge of how the File store works
+        File objectFile = new File(p.getRecordName() + "/" + p.getAccount());
+        assertTrue("The file was not created properly", objectFile.exists());
+        String fData = FileUtils.readFileToString(objectFile);
+        System.out.println("stored object: " + fData);
+        
         System.out.println("Reading person...");
         Person np = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());
         System.out.println("Read object: " + np.getName());
@@ -139,8 +142,6 @@ public class KiraDbTest {
 
         db.removeObjectByPrimaryKey(p, p.getAccount());
 
-        // presumes underlying knowledge of how the File store works
-        File objectFile = new File(p.getRecordName() + "/" + p.getAccount());
         assertFalse("The file was not removed properly", objectFile.exists());
         
         Person nnp = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());

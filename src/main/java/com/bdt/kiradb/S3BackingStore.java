@@ -38,7 +38,7 @@ public class S3BackingStore extends BackingStore {
 		} catch (S3ServiceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			setS3error(e.getMessage());
+			setS3error(e.getErrorMessage());
 			s3Service = null;
 		} catch (ServiceException e) {
 			// TODO Auto-generated catch block
@@ -48,7 +48,7 @@ public class S3BackingStore extends BackingStore {
 		}
 	}
 
-	public void setS3error(String s3error) {
+	private void setS3error(String s3error) {
 		this.S3error = s3error;
 	}
 
@@ -79,7 +79,8 @@ public class S3BackingStore extends BackingStore {
 		try {
 			s3Service.putObject(bucket, recordObject);
 		} catch (S3ServiceException e) {
-			throw new KiraException("S3ServiceException " + e.getMessage());
+			setS3error(e.getErrorMessage());
+			throw new KiraException("S3ServiceException " + e.getErrorMessage());
 		}
         
 	}
@@ -91,7 +92,8 @@ public class S3BackingStore extends BackingStore {
 		try {
 			objectComplete = s3Service.getObject(bucket, key);
 		} catch (S3ServiceException e) {
-			throw new KiraException("S3ServiceException " + e.getMessage());
+			setS3error(e.getErrorMessage());
+			throw new KiraException("S3ServiceException " + e.getErrorMessage());
 		}
 
 		ObjectInputStream ois;
@@ -106,10 +108,15 @@ public class S3BackingStore extends BackingStore {
 	}
 
 	@Override
-	void removeObject(XStream xstream, Record r, String value)
+	public void removeObject(XStream xstream, Record r, String value)
 			throws KiraException, IOException, ClassNotFoundException {
-		// TODO Auto-generated method stub
-		
+		String key = makeKey(r, value);
+		try {
+			s3Service.deleteObject(bucket, key);
+		} catch (ServiceException e) {
+			setS3error(e.getErrorMessage());
+			throw new KiraException("S3ServiceException " + e.getErrorMessage());
+		}
 	}
 	
 

@@ -2,6 +2,7 @@ package com.bdt.kiradb;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -134,7 +135,11 @@ public class FileBackingStore extends BackingStore {
 		try {
 			FileInputStream fis;
 
-			fis = new FileInputStream(rootpath + "/" + key);
+			try {
+				fis = new FileInputStream(rootpath + "/" + key);
+			} catch (FileNotFoundException e) {
+				return null;
+			}
 
 			ObjectInputStream ois;
 

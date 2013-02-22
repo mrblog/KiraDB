@@ -55,7 +55,7 @@ public class KiraDb {
 
 	private final static String TYPE_KEY = "type";
 
-	private final File indexDirectory;
+    private final File indexDirectory;
 
     private XStream xstream;
 
@@ -69,10 +69,10 @@ public class KiraDb {
 	/**
 	 * Construct a Core KiraDB instance with specified indexPath
 	 * 
-	 * @param indexDirectory The index directory
+	 * @param indexPath The index path
 	 */
-	public KiraDb(File indexDirectory) {
-        this.indexDirectory = indexDirectory;
+	public KiraDb(File indexPath) {
+		this.indexDirectory = indexPath;
 		xstream = new XStream();
 		try {
 			cacheStore = new CacheBackingStore();
@@ -82,11 +82,11 @@ public class KiraDb {
 	}
 	/**
 	 * Construct a Core KiraDB instance with specified indexPath, with cache mode
-	 * @param indexDirectory The index directory
+	 * @param indexPath The index path
 	 * @param disableCaching Set to true to disable caching
 	 */
-	public KiraDb(File indexDirectory, Boolean disableCaching) {
-        this.indexDirectory = indexDirectory;
+	public KiraDb(File indexPath, Boolean disableCaching) {
+		this.indexDirectory = indexPath;
 		xstream = new XStream();
 		if (!disableCaching) {
 			try {
@@ -102,11 +102,11 @@ public class KiraDb {
 	/**
 	 * Construct a Core KiraDB instance with specified indexPath, with user-supplied caching store
 	 * 
-     * @param indexDirectory The index directory
+	 * @param indexPath The index path
 	 * @param cacheStore The user-supplied caching BackingStore
 	 */
-	public KiraDb(File indexDirectory, BackingStore cacheStore) {
-        this.indexDirectory = indexDirectory;
+	public KiraDb(File indexPath, BackingStore cacheStore) {
+		this.indexDirectory = indexPath;
 		xstream = new XStream();
 		this.cacheStore = cacheStore;
 	}
@@ -136,15 +136,28 @@ public class KiraDb {
 	/**
 	 * Store object index and optionally the object itself into the DB
 	 *
-	 * @param object The object being indexed/written
-	 */
-	/**
-	 * @param r
+	 * @param r The Record object being written
+	 * 
 	 * @throws IOException
 	 * @throws InterruptedException
 	 * @throws KiraException 
 	 */
 	public void storeObject(Record r) throws IOException, InterruptedException, KiraException {
+		storeObject(r, true);
+	}	
+	
+	/**
+	 * Store index the object and pass thru to the backing store
+	 *  
+	 * @param r The Record object to be indexed/stored
+	 * @param writeThru True if writing to the backing store, false if indexing only (i.e. to refresh an object index)
+	 * 
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws KiraException
+	 */
+	public void storeObject(Record r, Boolean writeThru) throws IOException, InterruptedException, KiraException {
+
 		RecordDescriptor dr = r.descriptor();
 
 		Document doc = new Document();
@@ -193,8 +206,21 @@ public class KiraDb {
     		if (this.backingStore == null) {
     			throw new KiraException("STORE_MODE_BACKING but no backing store set");
     		}
-    		this.backingStore.storeObject(xstream, r);    		
-		
+    		if (writeThru) {
+    			try {
+    				this.backingStore.storeObject(xstream, r);
+    			} catch (Exception e) {
+    				if (cacheStore != null) {
+    					try {
+							this.cacheStore.removeObject(xstream, r, (String)r.descriptor().getPrimaryKey().getValue());
+						} catch (ClassNotFoundException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+    					throw new KiraException(e.getMessage());
+    				}
+    			}
+    		}
     		// store in the Cache if active
     		if (cacheStore != null) {
     			this.cacheStore.storeObject(xstream, r);
@@ -253,12 +279,40 @@ public class KiraDb {
 	public Object retrieveObjectByPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException {
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
+        Object result = null;
+        if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
+			if (this.backingStore == null) {
+				throw new KiraException("STORE_MODE_BACKING but no backing store set");
+			}
+    		if (cacheStore != null) {
+    			result = cacheStore.retrieveObject(xstream, r, value);
+    		}
+    		if (result == null) {
+    			try {
+    				result = this.backingStore.retrieveObject(xstream, r, value);
+    			} catch (Exception e) {
+    				if (cacheStore != null) {
+    					this.cacheStore.removeObject(xstream, (Record) r, value);
+    				}
+    				throw new KiraException(e.getMessage());
+    			}
+    			if (cacheStore != null) {
+    				if (result != null) {
+    					this.cacheStore.storeObject(xstream, (Record) result);
+    				} else {
+    					this.cacheStore.removeObject(xstream, (Record) r, value);
+    				}
+    			}
+    		}
+    		return result;
+    	}
+        
+        // not using a backing a store, so use the index
         FSDirectory idx = FSDirectory.open(indexDirectory);
         IndexReader ir = IndexReader.open(idx);
         
         Term t = new Term(key, value);
         TermDocs tdocs = ir.termDocs(t);
-        Object result = null;
         if (tdocs.next()) {
         	Document d = ir.document(tdocs.doc());
         	if (r.descriptor().getStoreMode() == RecordDescriptor.STORE_MODE_NONE) {
@@ -289,20 +343,6 @@ public class KiraDb {
         		result = ois.readObject();
 
         		ois.close();
-        	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
-				if (this.backingStore == null) {
-					throw new KiraException("STORE_MODE_BACKING but no backing store set");
-				}
-        		if (cacheStore != null) {
-        			result = cacheStore.retrieveObject(xstream, r, value);
-        		}
-        		if (result == null) {
-        			result = this.backingStore.retrieveObject(xstream, r, d.get(key));
-        			if (cacheStore != null) {
-        				this.cacheStore.storeObject(xstream, (Record) result);
-        			}
-        		}
-
         	}
         }
         tdocs.close();
@@ -405,10 +445,13 @@ public class KiraDb {
         		for (Document d: docs) {
         			Object result = null;
         			if (cacheStore != null) {
-            			result = cacheStore.retrieveObject(xstream, r, d.get(key));
+        				result = cacheStore.retrieveObject(xstream, r, d.get(key));
             		}
             		if (result == null) {
             			result = this.backingStore.retrieveObject(xstream, r, d.get(key));
+            			if (result == null) {
+            				throw new KiraException("Object in query results no available in backing store: " + d.get(key));
+            			}
             			if (cacheStore != null) {
             				this.cacheStore.storeObject(xstream, (Record) result);
             			}

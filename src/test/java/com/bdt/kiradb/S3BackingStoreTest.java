@@ -1,12 +1,10 @@
 package com.bdt.kiradb;
 
 import com.bdt.kiradb.mykdbapp.Person;
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
@@ -25,7 +23,8 @@ public class S3BackingStoreTest {
         if (key == null || secret == null || bucket == null) {
             System.out.printf("Skipping S3 backing store test.  One or more of AWS System properties aws.[key|secret|bucket] not set.");
         } else {
-            db = new S3KiraDB(Utils.makeTemporaryDirectory(), key, secret, bucket);
+            // disable caching to ensure the S3 store is read and written
+            db = new S3KiraDB(Utils.makeTemporaryDirectory(), true, key, secret, bucket);
             db.createIndex();
             System.out.printf("S3 test:  key=%s, secret=%s, bucket=%s\n", key, secret, bucket);
         }
@@ -59,8 +58,16 @@ public class S3BackingStoreTest {
         assertNotNull("The result should not be null", np);
         assertEquals("The person's name when read is not the same as when written", p.getName(), np.getName());
 
-        File directory = new File(p.getRecordName());
-        FileUtils.deleteDirectory(directory);
+        db.removeObjectByPrimaryKey(p, p.getAccount());
+
+        try {
+            Person nnp = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());
+            assertNotNull("The object was not removed properly", nnp);
+        } catch (KiraException e) {
+            // This is the expected result
+            System.out.println("got expected KiraException: " + e.getMessage());
+        }
+
     }
 
 }
