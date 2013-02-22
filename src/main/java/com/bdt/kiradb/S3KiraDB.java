@@ -1,5 +1,7 @@
 package com.bdt.kiradb;
 
+import java.io.File;
+
 /**
  * Construct an Amazon S3-backed instance of KiraDb.  The constructors require
  * the usual Amazon AWS S3 key, secret, and bucket name.
@@ -13,7 +15,7 @@ public class S3KiraDB extends KiraDb {
      * @param awsSecret AWS S3 secret
      * @param awsBucket AWS S3 bucketname
      */
-    public S3KiraDB(String indexPath, String awsKey, String awsSecret, String awsBucket) {
+    public S3KiraDB(File indexPath, String awsKey, String awsSecret, String awsBucket) {
         super(indexPath);
         super.setBackingStore(new S3BackingStore(awsKey, awsSecret, awsBucket));
     }
@@ -28,7 +30,7 @@ public class S3KiraDB extends KiraDb {
      * @param awsSecret      AWS S3 secret
      * @param awsBucket      AWS S3 bucketname
      */
-    public S3KiraDB(String indexPath, Boolean disableCaching, String awsKey, String awsSecret, String awsBucket) {
+    public S3KiraDB(File indexPath, Boolean disableCaching, String awsKey, String awsSecret, String awsBucket) {
         super(indexPath, disableCaching);
         super.setBackingStore(new S3BackingStore(awsKey, awsSecret, awsBucket));
     }
@@ -43,7 +45,7 @@ public class S3KiraDB extends KiraDb {
      * @param awsSecret  AWS S3 secret
      * @param awsBucket  AWS S3 bucketname
      */
-    public S3KiraDB(String indexPath, BackingStore cacheStore, String awsKey, String awsSecret, String awsBucket) {
+    public S3KiraDB(File indexPath, BackingStore cacheStore, String awsKey, String awsSecret, String awsBucket) {
         super(indexPath, cacheStore);
         super.setBackingStore(new S3BackingStore(awsKey, awsSecret, awsBucket));
     }

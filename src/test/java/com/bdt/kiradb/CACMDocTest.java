@@ -1,19 +1,18 @@
 package com.bdt.kiradb;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
+import com.bdt.kiradb.mykdbapp.TextDocument;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.bdt.kiradb.mykdbapp.TextDocument;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class CACMDocTest {
     KiraDb db;
@@ -21,7 +20,7 @@ public class CACMDocTest {
     // Gets run before each method annotated with @Test
     @Before
     public void setup() throws KiraCorruptIndexException, IOException {
-        db = new KiraDb("KiraDBIndex");
+        db = new KiraDb(new File("KiraDBIndex"));
         System.out.println("Creating Index...");
         db.createIndex();
     }

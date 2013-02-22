@@ -25,7 +25,7 @@ public class S3BackingStoreTest {
         if (key == null || secret == null || bucket == null) {
             System.out.printf("Skipping S3 backing store test.  One or more of AWS System properties aws.[key|secret|bucket] not set.");
         } else {
-            db = new S3KiraDB(Utils.makeTemporaryDirectory().getAbsolutePath(), key, secret, bucket);
+            db = new S3KiraDB(Utils.makeTemporaryDirectory(), key, secret, bucket);
             db.createIndex();
             System.out.printf("S3 test:  key=%s, secret=%s, bucket=%s\n", key, secret, bucket);
         }

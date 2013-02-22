@@ -28,7 +28,7 @@ public class KiraDbTest {
     // Gets run before each method annotated with @Test
     @Before
     public void setup() throws KiraCorruptIndexException, IOException {
-        db = new KiraDb("KiraDBIndex");
+        db = new KiraDb(new File("KiraDBIndex"));
         System.out.println("Creating Index...");
         db.createIndex();
     }

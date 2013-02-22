@@ -55,7 +55,7 @@ public class KiraDb {
 
 	private final static String TYPE_KEY = "type";
 
-	private String indexPath;
+	private final File indexDirectory;
 
     private XStream xstream;
 
@@ -69,10 +69,10 @@ public class KiraDb {
 	/**
 	 * Construct a Core KiraDB instance with specified indexPath
 	 * 
-	 * @param indexPath The index path
+	 * @param indexDirectory The index directory
 	 */
-	public KiraDb(String indexPath) {
-		this.indexPath = indexPath;
+	public KiraDb(File indexDirectory) {
+        this.indexDirectory = indexDirectory;
 		xstream = new XStream();
 		try {
 			cacheStore = new CacheBackingStore();
@@ -82,11 +82,11 @@ public class KiraDb {
 	}
 	/**
 	 * Construct a Core KiraDB instance with specified indexPath, with cache mode
-	 * @param indexPath The index path
+	 * @param indexDirectory The index directory
 	 * @param disableCaching Set to true to disable caching
 	 */
-	public KiraDb(String indexPath, Boolean disableCaching) {
-		this.indexPath = indexPath;
+	public KiraDb(File indexDirectory, Boolean disableCaching) {
+        this.indexDirectory = indexDirectory;
 		xstream = new XStream();
 		if (!disableCaching) {
 			try {
@@ -102,11 +102,11 @@ public class KiraDb {
 	/**
 	 * Construct a Core KiraDB instance with specified indexPath, with user-supplied caching store
 	 * 
-	 * @param indexPath The index path
+     * @param indexDirectory The index directory
 	 * @param cacheStore The user-supplied caching BackingStore
 	 */
-	public KiraDb(String indexPath, BackingStore cacheStore) {
-		this.indexPath = indexPath;
+	public KiraDb(File indexDirectory, BackingStore cacheStore) {
+        this.indexDirectory = indexDirectory;
 		xstream = new XStream();
 		this.cacheStore = cacheStore;
 	}
@@ -224,8 +224,7 @@ public class KiraDb {
 			break;
 		}
 		if (t != null) {
-			File indexDir = new File(indexPath);
-            IndexWriter writer = getIndexWriter(indexDir);
+            IndexWriter writer = getIndexWriter(indexDirectory);
             try {
             	writer.updateDocument(t, doc);
             } catch (CorruptIndexException e) {
@@ -254,8 +253,7 @@ public class KiraDb {
 	public Object retrieveObjectByPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException {
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
-        File indexDir = new File(indexPath);
-        FSDirectory idx = FSDirectory.open(indexDir);
+        FSDirectory idx = FSDirectory.open(indexDirectory);
         IndexReader ir = IndexReader.open(idx);
         
         Term t = new Term(key, value);
@@ -463,9 +461,8 @@ public class KiraDb {
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
 		List<String> results = new ArrayList<String>();
-        File indexDir = new File(indexPath);
         FSDirectory idx;
-        idx = FSDirectory.open(indexDir);
+        idx = FSDirectory.open(indexDirectory);
 		
         IndexReader ir = IndexReader.open(idx);
         IndexSearcher is = new IndexSearcher(idx, true);
@@ -522,8 +519,7 @@ public class KiraDb {
 	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, Sort sortBy, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException {
 
 		// 1. create the index
-		File indexDir = new File(indexPath);
-		Directory index = FSDirectory.open(indexDir);
+		Directory index = FSDirectory.open(indexDirectory);
 
 		// the boolean arg in the IndexWriter ctor means to
 		// create a new index, overwriting any existing index
@@ -643,10 +639,9 @@ public class KiraDb {
 	 *
 	 */
 	public void createIndex() throws KiraCorruptIndexException, IOException {
-        File indexDir = new File(indexPath);
 		IndexWriter writer;
 		try {
-			writer = new IndexWriter(FSDirectory.open(indexDir), new StandardAnalyzer(Version.LUCENE_30),
+			writer = new IndexWriter(FSDirectory.open(indexDirectory), new StandardAnalyzer(Version.LUCENE_30),
 					true, IndexWriter.MaxFieldLength.UNLIMITED);
 		} catch (CorruptIndexException e) {
 			throw new KiraCorruptIndexException(e.getMessage());
@@ -667,8 +662,7 @@ public class KiraDb {
 	 * @throws KiraCorruptIndexException
 	 */
 	public void optimizeIndex() throws InterruptedException, IOException, KiraCorruptIndexException {
-		File indexDir = new File(indexPath);
-		IndexWriter writer = getIndexWriter(indexDir);
+		IndexWriter writer = getIndexWriter(indexDirectory);
         try {
 	        writer.optimize();
 		} catch (CorruptIndexException e) {
@@ -686,8 +680,7 @@ public class KiraDb {
 	 * @throws IOException
 	 */
     public void deleteIndex() throws IOException {
-        File directory = new File(indexPath);
-        FileUtils.deleteDirectory(directory);
+        FileUtils.deleteDirectory(indexDirectory);
     }
 
     /**
@@ -729,11 +722,9 @@ public class KiraDb {
 	public void removeObjectByPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException, InterruptedException {
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
-        File indexDir = new File(indexPath);
-        
         Term t = new Term(key, value);
         
-        IndexWriter writer = getIndexWriter(indexDir);
+        IndexWriter writer = getIndexWriter(indexDirectory);
         try {
         	writer.deleteDocuments(t);
         	writer.commit();
