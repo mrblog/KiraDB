@@ -1,5 +1,7 @@
 package com.bdt.kiradb;
 
+import com.thoughtworks.xstream.XStream;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -10,26 +12,24 @@ import java.io.ObjectOutputStream;
 import java.nio.channels.FileLock;
 import java.util.logging.Logger;
 
-import com.thoughtworks.xstream.XStream;
-
 public class FileBackingStore extends BackingStore {
 
     private Logger logger = Logger.getLogger(FileBackingStore.class.getName());
 
-	private String rootpath;
+	private File rootpath;
 	
 	private static final long WAIT_TIME = 100L;
     private static final long LOCK_TIMEOUT = 5000L;
 
     private static final String LOCKPATH = "/locks/";
     
-    public FileBackingStore(String path) {
+    public FileBackingStore(File path) {
     	this.rootpath = path;
     }
     
     
 	private File lock(String group, String key) {
-		String odir = rootpath + LOCKPATH + group;
+		String odir = new File(rootpath, LOCKPATH + group).getAbsolutePath();
 	    boolean exists = (new File(odir)).exists();
 	    if (!exists) {
 		    boolean status;
@@ -88,7 +88,7 @@ public class FileBackingStore extends BackingStore {
 		}
 		try {
 			FileOutputStream fos;
-			String odir = rootpath + "/" + r.getRecordName();
+			String odir = new File(rootpath, "/" + r.getRecordName()).getAbsolutePath();
 			boolean exists = (new File(odir)).exists();
 			if (!exists) {
 				boolean status;
@@ -96,7 +96,7 @@ public class FileBackingStore extends BackingStore {
 				//logger.info(odir + " " + (status ? "success" : "failure"));
 			}
 			try {
-				fos = new FileOutputStream(rootpath + "/" + key);
+				fos = new FileOutputStream(new File(rootpath,  "/" + key));
 				ObjectOutputStream oos = xstream.createObjectOutputStream(fos);
 
 				FileLock lock = fos.getChannel().lock();
@@ -136,7 +136,7 @@ public class FileBackingStore extends BackingStore {
 			FileInputStream fis;
 
 			try {
-				fis = new FileInputStream(rootpath + "/" + key);
+				fis = new FileInputStream(new File(rootpath, "/" + key));
 			} catch (FileNotFoundException e) {
 				return null;
 			}

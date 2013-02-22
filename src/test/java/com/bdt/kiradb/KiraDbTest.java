@@ -116,8 +116,7 @@ public class KiraDbTest {
     
     @Test
     public void testFileBackingStore() throws IOException, InterruptedException, KiraException, ClassNotFoundException {
-    	FileBackingStore fs = new FileBackingStore(".");
-    	db.setBackingStore(fs);
+        FileSystemKiraDb db = new FileSystemKiraDb(new File("KiraDBIndex"), new File("."));
     	Person p = new Person();
     	p.setStoreMode(RecordDescriptor.STORE_MODE_BACKING);
         System.out.println("Testing File backing store...");
