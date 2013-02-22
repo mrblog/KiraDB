@@ -25,6 +25,10 @@ public class S3BackingStore extends BackingStore {
     private AccessControlList bucketAcl;
     private String S3error;
 
+	private S3Object[] objectsList;
+
+	private int objectIndex;
+
     public S3BackingStore() {
         InputStream resourceAsStream = getClass().getResourceAsStream("/s3.properties");
         if (resourceAsStream == null) {
@@ -148,6 +152,32 @@ public class S3BackingStore extends BackingStore {
             throw new KiraException("S3ServiceException " + e.getErrorMessage());
         }
     }
+
+	@Override
+	Object firstObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
+		// will this really work if there are millions of records?
+	    try {
+			objectsList = s3Service.listObjects(bucket, r.getRecordName() + "/", "/", Long.MAX_VALUE);
+		} catch (S3ServiceException e) {
+            setS3error(e.getErrorMessage());
+            throw new KiraException("S3ServiceException " + e.getErrorMessage());
+		}
+	    objectIndex = 0;
+	    return nextObject(xstream, r);
+	}
+
+	@Override
+	Object nextObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
+		if (objectIndex < objectsList.length) {
+			S3Object recordObject = objectsList[objectIndex++];
+			String[] parts = recordObject.getKey().split("/");
+			if (parts.length != 2) {
+				throw new KiraException("unexpected key: " + recordObject.getKey());
+			}
+			return retrieveObject(xstream, r, parts[1]);
+		}
+		return null;
+	}
 
 
 }

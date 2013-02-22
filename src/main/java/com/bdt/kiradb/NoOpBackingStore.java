@@ -17,4 +17,16 @@ public class NoOpBackingStore extends BackingStore {
     @Override
     void removeObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException {
     }
+
+	@Override
+	Object firstObject(XStream xstream, Record r) throws KiraException,
+			IOException, ClassNotFoundException {
+		return null;
+	}
+
+	@Override
+	Object nextObject(XStream xstream, Record r) throws KiraException,
+			IOException, ClassNotFoundException {
+		return null;
+	}
 }

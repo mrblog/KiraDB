@@ -159,7 +159,59 @@ public class KiraDbTest {
         
         Person nnp = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());
         assertNull("The result should be null", nnp);
+        
+        // test rebuilding the index from backing store
+        
+        String testAccounts[] = { "201", "108", "309", "922" };
+        String testNames[] = { "Anderson, W. H.", "Perlis, A. J.", "Thornton, C.", "Galler, G. M." };
 
+        for (int i = 0; i < testAccounts.length; i++) {
+        	Person xp = new Person();
+        	xp.setStoreMode(RecordDescriptor.STORE_MODE_BACKING);
+            xp.setAccount(testAccounts[i]);
+            xp.setName(testNames[i]);
+            xp.setCreatedAt(new Date());
+            System.out.println("Writing person... " + xp.getAccount());
+            db.storeObject(xp);
+        	
+        }
+
+        List<Object> q1Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
+        assertNotNull("q1Results result should not be null", q1Results);
+        System.out.println("Found " + q1Results.size() + " records. Deleting index...");
+        assertEquals("Incorrect number of records", q1Results.size(), testAccounts.length);
+
+        db.deleteIndex();
+        
+        try {
+        	List<Object> q2Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
+            assertNotNull("q2Results result should not be null", q2Results);
+            System.out.println("Found " + q2Results.size() + " records. Recreating index...");
+        	
+        } catch (KiraException e) {
+            System.out.println("Got expected exception" + e.getMessage());
+
+        }
+        
+        db.createIndex();
+        
+        Person rp = (Person)db.firstObject(p);
+        while (rp != null) {
+            System.out.println("Reindexing person... " + rp.getAccount());
+            db.storeObject(rp, false);
+            rp = (Person)db.nextObject(p);
+        }
+        
+        List<Object> q3Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
+        assertNotNull("q3Results result should not be null", q3Results);
+        System.out.println("Found " + q3Results.size() + " records.");
+        assertEquals("Incorrect number of records", q3Results.size(), testAccounts.length);
+
+        for (Object o : q3Results) {
+        	Person dp = (Person)o;
+        	db.removeObjectByPrimaryKey(p, dp.getAccount());
+        }
+        
         File directory = new File(p.getRecordName());
         FileUtils.deleteDirectory(directory);
     }
@@ -253,7 +305,7 @@ public class KiraDbTest {
     	}
     }
 
-/*
+    /*
     @Test
     public void testSomeResource() {
         InputStream inputStream = getClass().getResourceAsStream("/opaquedata.bin");

@@ -1,5 +1,6 @@
 package com.bdt.kiradb;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import net.sf.ehcache.Cache;
@@ -50,6 +51,20 @@ public class CacheBackingStore extends BackingStore {
 		String key = makeKey(r, value);
         cache.remove(key);
 
+	}
+
+
+	@Override
+	Object firstObject(XStream xstream, Record r) throws KiraException,
+			IOException, ClassNotFoundException {
+		return null;
+	}
+
+
+	@Override
+	Object nextObject(XStream xstream, Record r) throws KiraException,
+			IOException, ClassNotFoundException {
+		return null;
 	}
 
 }

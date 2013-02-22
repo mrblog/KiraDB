@@ -17,6 +17,10 @@ public class FileBackingStore extends BackingStore {
     private Logger logger = Logger.getLogger(FileBackingStore.class.getName());
 
 	private File rootpath;
+
+	private File[] filesList;
+
+	private int filesIndex;
 	
 	private static final long WAIT_TIME = 100L;
     private static final long LOCK_TIMEOUT = 5000L;
@@ -168,5 +172,26 @@ public class FileBackingStore extends BackingStore {
                  unlock(lck);
          }
 
+	}
+
+
+	@Override
+	Object firstObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
+        File directory = new File(rootpath + "/" + r.getRecordName());
+        filesList = directory.listFiles();
+        filesIndex = 0;
+		return nextObject(xstream, r);
+	}
+
+
+	@Override
+	Object nextObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
+		while (filesIndex < filesList.length) {
+			File fileEntry = filesList[filesIndex++];
+			if (fileEntry.isFile()) {
+				return retrieveObject(xstream, r, fileEntry.getName());
+			}
+		}
+		return null;
 	}
 }

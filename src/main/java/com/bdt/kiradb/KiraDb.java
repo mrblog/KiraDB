@@ -26,6 +26,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.Version;
+import org.jets3t.service.S3ServiceException;
+import org.jets3t.service.model.S3Object;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -558,14 +560,14 @@ public class KiraDb {
 
 	
 	
-	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, int hitsPerPage) throws CorruptIndexException, IOException, ParseException {
+	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, int hitsPerPage) throws CorruptIndexException, IOException, ParseException, KiraException {
 		return searchDocuments(typeStr, querystr, fullText, null, hitsPerPage);
 	}
-	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException {
+	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException, KiraException {
 		return searchDocuments(typeStr, querystr, fullText, null, hitsPerPage, skipDocs);
 	}
 
-	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, Sort sortBy, int hitsPerPage) throws CorruptIndexException, IOException, ParseException {
+	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, Sort sortBy, int hitsPerPage) throws CorruptIndexException, IOException, ParseException, KiraException {
 		return searchDocuments(typeStr, querystr, fullText, sortBy, hitsPerPage, 0);
 	}
 	/**
@@ -577,11 +579,17 @@ public class KiraDb {
 	 * @throws CorruptIndexException
 	 * @throws IOException
 	 * @throws ParseException
+	 * @throws KiraException 
 	 */
-	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, Sort sortBy, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException {
+	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, Sort sortBy, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException, KiraException {
 
 		// 1. create the index
-		Directory index = FSDirectory.open(indexDirectory);
+		Directory index = null;
+		try {
+			index = FSDirectory.open(indexDirectory);
+		} catch (Exception e) {
+			throw new KiraException("failed to access index: " + e.getMessage());
+		}
 
 		// 2. query
 		BooleanQuery booleanQuery = new BooleanQuery();
@@ -607,7 +615,12 @@ public class KiraDb {
 		this.setLastQuery(booleanQuery.toString());
 		
 		// 3. search
-		IndexSearcher searcher = new IndexSearcher(index, true);
+		IndexSearcher searcher;
+		try {
+			searcher = new IndexSearcher(index, true);
+		} catch (Exception e) {
+			throw new KiraException("IndexSearcher: " + e.getMessage());
+		}
 		if (sortBy == null)
 			sortBy = new Sort(new SortField("date", SortField.STRING, true));
 		TopFieldDocs tfd = searcher.search(booleanQuery, null, skipDocs+hitsPerPage, sortBy);
@@ -802,4 +815,24 @@ public class KiraDb {
         }
 	}
 
+	public Object firstObject(Record r) throws KiraException, IOException, ClassNotFoundException {
+		if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) == 0) {
+			throw new KiraException("No backing store associated with record class");
+		}
+		if (this.backingStore == null) {
+			throw new KiraException("No backing store activated");
+		}
+	    return this.backingStore.firstObject(xstream, r);
+	}
+
+	public Object nextObject(Record r) throws KiraException, IOException, ClassNotFoundException {
+		if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) == 0) {
+			throw new KiraException("No backing store associated with record class");
+		}
+		if (this.backingStore == null) {
+			throw new KiraException("No backing store activated");
+		}
+	    return this.backingStore.nextObject(xstream, r);
+
+	}
 }

@@ -13,6 +13,10 @@ public abstract class BackingStore {
 
 	abstract void removeObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException;
 
+	abstract Object firstObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException;
+	
+	abstract Object nextObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException;
+	
 	protected String makeKey(Record r) {
 		return makeKey(r, (String)r.descriptor().getPrimaryKey().getValue());
 	}
