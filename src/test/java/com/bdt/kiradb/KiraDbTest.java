@@ -95,9 +95,11 @@ public class KiraDbTest {
         assertEquals("Expected txId " +  exp1.getTxId() + " but got: " + res1.get(exp1.getPrimaryKeyName()), exp1.getTxId(), res1.get(exp1.getPrimaryKeyName()));
         assertEquals("Expected txId " +  exp2.getTxId() + " but got: " + res2.get(exp2.getPrimaryKeyName()), exp2.getTxId(), res2.get(exp2.getPrimaryKeyName()));
 
-        List<Object> q1Results = db.executeQuery(exp1, Expense.CATEGORY, "Clothing", 10, 0, Expense.DATE, true);
-        assertNotNull("The result should not be null", q1Results);
+        List<Object> q1Results = db.executeQuery(exp1, Expense.CATEGORY, exp1.getCategory(), 10, 0, Expense.DATE, true);
+        assertNotNull("The query 1 result should not be null", q1Results);
         System.out.println("query 1 matched " + q1Results.size() + " records");
+        assertEquals("query 1 expected exactly one result",  q1Results.size(), 1);
+
         for (Object id: q1Results) {
         	System.out.println("query 1 matched id: " + (String)id);
 
@@ -105,12 +107,24 @@ public class KiraDbTest {
         assertEquals("Category query 1 failed", (String)q1Results.get(0), exp1.getTxId());
 
         List<Object> q2Results = db.executeQuery(exp1, Expense.MEMO, "garbage", 10, 0, Expense.DATE, true);
-        assertNotNull("The result should not be null", q2Results);
+        assertNotNull("The query 2 result should not be null", q2Results);
         System.out.println("query 2 matched " + q2Results.size() + " records");
+        assertEquals("query 2 expected exactly one result",  q2Results.size(), 1);
+
         for (Object id: q2Results) {
         	System.out.println("query 2 matched id: " + (String)id);
         }
         assertEquals("Memo query 2 failed", (String)q2Results.get(0), exp2.getTxId());
+
+        List<Object> q3Results = db.executeQuery(exp1, null, null, 10, 0, Expense.DATE, true);
+        assertNotNull("The query 3 result should not be null", q3Results);
+        System.out.println("query 3 matched " + q3Results.size() + " records");
+        assertEquals("query 3 expected exactly two results",  q3Results.size(), 2);
+        for (Object id: q3Results) {
+        	System.out.println("query 3 matched id: " + (String)id);
+        }
+        assertEquals("query 3 incorrect order of results",  (String)q3Results.get(0), exp2.getTxId());
+        assertEquals("query 3 possible duplicate results",  (String)q3Results.get(1), exp1.getTxId());
 
     }
     

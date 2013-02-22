@@ -16,6 +16,9 @@ For example, let's say you're tracking high scores for a game. A `GameScore` cla
 		private String team;
 		private Boolean cheatMode;
 		
+		public GameScore() {
+		}
+
 		public GameScore(String playerId, int score, String playerName, Boolean cheatMode) {
 			setPlayerId(playerId);
 			setScore(score);
@@ -75,8 +78,8 @@ the `Record` interface:
 	
 		private static final String RECORD_NAME = "scores";
 		private static final String PRIMARY_KEY = "playerId";
-		private static final String SCORE = "score";
-		private static final String TEAM = "team";
+		public static final String SCORE = "score";
+		public static final String TEAM = "team";
 
 		...
 	
@@ -120,7 +123,7 @@ To create a new subclass, implement the `Record` interface. KiraDB will return i
 
 ```
 
-	KiraDb db = new KiraDb("KiraDBIndex");
+	KiraDb db = new KiraDb(new File("KiraDBIndex"));
 
 ```
 
@@ -160,7 +163,17 @@ We've already seen how you can retrieve a single Object from KiraDB. There are m
 
 ### Basic Queries
 
-The general approach is to create a query, put conditions on it, and then retrieve a `List` of matching Objects using `executeQuery`. For example, to retrieve of the scores with a particular playerName, use the equalTo method to constrain the value for a key.
+The general approach is to create a query, put conditions on it, and then retrieve a `List` of matching Objects using `executeQuery`. For example, to retrieve of the scores associated with with a particular team, by constraining the value for a key.
+
+```
+
+        List<Object> qResults = db.executeQuery(new GameScore(), GameScore.TEAM, "shaggy", 10, 0, GameScore.SCORE, true);
+
+
+```
+
+This returns scores belonging to team "shaggy" returning 10 results at a time, skipping 0 results (i.e. starting at 0), sorting by SCORE in reverse sort order (highest score first).
+
 
 
 ### Primary Keys
@@ -186,4 +199,3 @@ Users can provide their own custom backing store by implementing their own `Back
 ### Record, Key, and Field Names
 
 Record, Primary Key, and Field Names are case-sensitive and must consist of letters and digits only.
-

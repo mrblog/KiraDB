@@ -352,6 +352,19 @@ public class KiraDb {
 
 	/**
 	 * Query for matching records
+	 * <p>
+	 * Set queryFieldName to restrict results to records where that fields matches
+	 * the querystr value.
+	 * <p>
+	 * If queryFieldName is null and querystr is specified, the first field in
+	 * the Record descriptor is selected by default.
+	 * <p>
+	 * If both queryFieldName and querystr are null then all records match
+	 * (useful for retrieving sorted lists of Records).
+	 * <p>
+	 * sortFieldName may be specified to order the results, otherwise a
+	 * default "date" field ordering is used, or object ordering (none) if
+	 * no "date" field exists.
 	 * 
 	 * @param r An instance of the Class / Record
 	 * @param queryFieldName The name to the field to query
@@ -403,12 +416,18 @@ public class KiraDb {
         }
         String queryFieldName = null;
         Boolean fullText = false;
+        if (queryField == null) {
+        	if (querystr != null && r.descriptor().getFields() != null)
+        		queryField = r.descriptor().getFields().get(0);
+        }
+        String runQueryStr = querystr;
         if (queryField != null) {
         	queryFieldName = queryField.getName();
         	fullText = (queryField.getType() == FieldType.FULLTEXT);
+        	runQueryStr = queryFieldName + ":" + querystr;
         }
 		try {
-			docs = searchDocuments(r.getRecordName(), queryFieldName + ":" + querystr, fullText, sortBy, hitsPerPage, skipDocs);
+			docs = searchDocuments(r.getRecordName(), runQueryStr, fullText, sortBy, hitsPerPage, skipDocs);
 		} catch (ParseException e) {
 			throw new KiraException("ParseException " + e.getMessage());
 		} catch (CorruptIndexException e) {
@@ -563,15 +582,6 @@ public class KiraDb {
 
 		// 1. create the index
 		Directory index = FSDirectory.open(indexDirectory);
-
-		// the boolean arg in the IndexWriter ctor means to
-		// create a new index, overwriting any existing index
-		/*IndexWriter w = new IndexWriter(index, analyzer, IndexWriter.MaxFieldLength.UNLIMITED);
-		addDoc(w, "Lucene in Action");
-		addDoc(w, "Lucene for Dummies");
-		addDoc(w, "Managing Gigabytes");
-		addDoc(w, "The Art of Computer Science");
-		w.close();*/
 
 		// 2. query
 		BooleanQuery booleanQuery = new BooleanQuery();
