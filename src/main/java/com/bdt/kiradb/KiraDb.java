@@ -44,7 +44,7 @@ import java.util.logging.Logger;
 
 /**
  * The Core KiraDB API
- * 
+ *
  * @author David Beckemeyer and Mark Petrovic
  *
  */
@@ -64,10 +64,10 @@ public class KiraDb {
     private BackingStore cacheStore;
 
 	private String savedQuery;
-    
+
 	/**
 	 * Construct a Core KiraDB instance with specified indexPath
-	 * 
+	 *
 	 * @param indexPath The index path
 	 */
 	public KiraDb(File indexPath) {
@@ -100,7 +100,7 @@ public class KiraDb {
 
 	/**
 	 * Construct a Core KiraDB instance with specified indexPath, with user-supplied caching store
-	 * 
+	 *
 	 * @param indexPath The index path
 	 * @param cacheStore The user-supplied caching BackingStore
 	 */
@@ -136,21 +136,21 @@ public class KiraDb {
 	 * Store object index and optionally the object itself into the DB
 	 *
 	 * @param r The Record object being written
-	 * 
+	 *
 	 * @throws IOException
 	 * @throws InterruptedException
-	 * @throws KiraException 
+	 * @throws KiraException
 	 */
 	public void storeObject(Record r) throws IOException, InterruptedException, KiraException {
 		storeObject(r, true);
-	}	
-	
+	}
+
 	/**
 	 * Store index the object and pass thru to the backing store
-	 *  
+	 *
 	 * @param r The Record object to be indexed/stored
 	 * @param writeThru True if writing to the backing store, false if indexing only (i.e. to refresh an object index)
-	 * 
+	 *
 	 * @throws IOException
 	 * @throws InterruptedException
 	 * @throws KiraException
@@ -305,11 +305,11 @@ public class KiraDb {
     		}
     		return result;
     	}
-        
+
         // not using a backing a store, so use the index
         FSDirectory idx = FSDirectory.open(indexDirectory);
         IndexReader ir = IndexReader.open(idx);
-        
+
         Term t = new Term(key, value);
         TermDocs tdocs = ir.termDocs(t);
         if (tdocs.next()) {
@@ -325,7 +325,7 @@ public class KiraDb {
                 final String recordName = "bar";
                 final String pkName = "blah";
 
-                final Record aRecord = new Record() {
+                Record aRecord = new Record() {
                     @Override
                     public RecordDescriptor descriptor() {
                         return descriptor;
@@ -343,7 +343,7 @@ public class KiraDb {
                 };
                 // ####
 
-            	try {
+                try {
 					result = r.getClass().newInstance();
 				} catch (InstantiationException e) {
 					throw new KiraException("InstantiationException " + e.getMessage());
@@ -363,7 +363,7 @@ public class KiraDb {
 						}
             		}
             	}
-            	
+
         	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_INDEX) != 0) {
 
         		String obj = d.get("object");
@@ -400,7 +400,7 @@ public class KiraDb {
 	 * sortFieldName may be specified to order the results, otherwise a
 	 * default "date" field ordering is used, or object ordering (none) if
 	 * no "date" field exists.
-	 * 
+	 *
 	 * @param r An instance of the Class / Record
 	 * @param queryFieldName The name to the field to query
 	 * @param querystr The query string
@@ -408,7 +408,7 @@ public class KiraDb {
 	 * @param skipDocs The number of records to skip
 	 * @param sortFieldName Optional sort field name
 	 * @param reverse Set to true to reverse the sort order
-	 * 
+	 *
 	 * @return List<Object> list of matching objects or list of matching keys
 
 	 */
@@ -426,7 +426,7 @@ public class KiraDb {
 	}
 	/**
 	 * Query for matching records
-	 * 
+	 *
 	 * @param r An instance of the Class / Record
 	 * @param queryField The field to query
 	 * @param querystr The query string
@@ -434,9 +434,9 @@ public class KiraDb {
 	 * @param skipDocs The number of records to skip
 	 * @param sortField Optional sort field or null
 	 * @param reverse Set to true to reverse the sort order
-	 * 
+	 *
 	 * @return List<Object> list of matching objects or list of matching keys
-	 * 
+	 *
 	 * @throws KiraException
 	 * @throws IOException
 	 * @throws ClassNotFoundException
@@ -444,7 +444,7 @@ public class KiraDb {
 	public List<Object> executeQuery(Record r, Field queryField, String querystr, int hitsPerPage, int skipDocs, Field sortField, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
 		List<Document> docs;
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
-        
+
         Sort sortBy = null;
         if (sortField != null) {
         	sortBy = new Sort(new SortField(sortField.getName(), SortField.STRING, reverse));
@@ -512,13 +512,13 @@ public class KiraDb {
             		}
 					results.add(result);
         		}
-        		
+
         	}
-        	
+
         }
         return results;
 	}
-	
+
 	public void dumpDocuments(String type) throws KiraException, KiraCorruptIndexException, IOException {
 		List<Document> docs;
 
@@ -537,34 +537,34 @@ public class KiraDb {
         	}
         }
 	}
-	
+
 	/**
 	 * Find related (similar) documents based on given value and fields to examine
-	 * 
+	 *
 	 * @param r The Record Object (Document Class)
 	 * @param testStr The input value to use as the basis for similarity
 	 * @param fieldNames The names of the fields to examine
 	 * @param numHits The number of similar documents to retrieve
 	 * @param excludeDocId Optional "primary key" to exclude from results
-	 * 
+	 *
 	 * @return List<String> The list of matching records primary keys
-	 * 
+	 *
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 * @throws KiraException
 	 */
-	
+
 	public List<String> relatedObjects(Record r, String testStr, String[] fieldNames, int numHits, String excludeDocId) throws IOException, ClassNotFoundException, KiraException {
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
 		List<String> results = new ArrayList<String>();
         FSDirectory idx;
         idx = FSDirectory.open(indexDirectory);
-		
+
         IndexReader ir = IndexReader.open(idx);
         IndexSearcher is = new IndexSearcher(idx, true);
         MoreLikeThis mlt = new MoreLikeThis(ir);
-        
+
       //lower some settings to MoreLikeThis will work with very short titles
         mlt.setMinTermFreq(1);
         mlt.setMinDocFreq(1);
@@ -591,8 +591,8 @@ public class KiraDb {
 		return results;
 	}
 
-	
-	
+
+
 	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, int hitsPerPage) throws CorruptIndexException, IOException, ParseException, KiraException {
 		return searchDocuments(typeStr, querystr, fullText, null, hitsPerPage);
 	}
@@ -612,7 +612,7 @@ public class KiraDb {
 	 * @throws CorruptIndexException
 	 * @throws IOException
 	 * @throws ParseException
-	 * @throws KiraException 
+	 * @throws KiraException
 	 */
 	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, Sort sortBy, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException, KiraException {
 
@@ -646,7 +646,7 @@ public class KiraDb {
 		booleanQuery.add(q1, org.apache.lucene.search.BooleanClause.Occur.MUST);
 
 		this.setLastQuery(booleanQuery.toString());
-		
+
 		// 3. search
 		IndexSearcher searcher;
 		try {
@@ -775,7 +775,7 @@ public class KiraDb {
 
 	/**
 	 * Delete the index
-	 * 
+	 *
 	 * @throws IOException
 	 */
     public void deleteIndex() throws IOException {
@@ -784,9 +784,9 @@ public class KiraDb {
 
     /**
      * Set the backing store to be used
-     *  
+     *
      * @param backingStore
-     * 
+     *
      * @return Core The Core instance (self)
      */
 	public KiraDb setBackingStore(BackingStore backingStore) {
@@ -800,19 +800,19 @@ public class KiraDb {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return String the last query executed
 	 */
 	public String getLastQuery() {
 		return savedQuery;
 	}
-	
+
 	/**
 	 * Remove specified record
-	 * 
+	 *
 	 * @param r The Record class
 	 * @param value The primary key value to be removed
-	 * 
+	 *
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 * @throws KiraException
@@ -822,7 +822,7 @@ public class KiraDb {
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
         Term t = new Term(key, value);
-        
+
         IndexWriter writer = getIndexWriter(indexDirectory);
         try {
         	writer.deleteDocuments(t);
