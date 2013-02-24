@@ -26,8 +26,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.Version;
-import org.jets3t.service.S3ServiceException;
-import org.jets3t.service.model.S3Object;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,7 +38,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -319,6 +316,33 @@ public class KiraDb {
         	Document d = ir.document(tdocs.doc());
         	if (r.descriptor().getStoreMode() == RecordDescriptor.STORE_MODE_NONE) {
         		// if object not returned, then return fields as key,value pairs
+
+                // ####
+                // Does this help?
+                // These variables have to be declared 'final' for the new instance to use
+                // them with confidence, perhaps in another thread.
+                final RecordDescriptor descriptor = new RecordDescriptor("foo");
+                final String recordName = "bar";
+                final String pkName = "blah";
+
+                final Record aRecord = new Record() {
+                    @Override
+                    public RecordDescriptor descriptor() {
+                        return descriptor;
+                    }
+
+                    @Override
+                    public String getRecordName() {
+                        return recordName;
+                    }
+
+                    @Override
+                    public String getPrimaryKeyName() {
+                        return pkName;
+                    }
+                };
+                // ####
+
             	try {
 					result = r.getClass().newInstance();
 				} catch (InstantiationException e) {
