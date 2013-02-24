@@ -343,27 +343,16 @@ public class KiraDb {
                 };
                 // ####
 
-                try {
-					result = r.getClass().newInstance();
-				} catch (InstantiationException e) {
-					throw new KiraException("InstantiationException " + e.getMessage());
-				} catch (IllegalAccessException e) {
-					throw new KiraException("IllegalAccessException " + e.getMessage());
-				}
-				System.out.println("r: " + result + " primary key: " + r.descriptor().getPrimaryKey());
-				System.out.println("result: " + result + " primary key: " + result.descriptor().getPrimaryKey());
-            	result.descriptor().getPrimaryKey().setValue((String)d.get(key));
+                aRecord.descriptor().setPrimaryKey(new Field(r.getPrimaryKeyName(),FieldType.STRING, (String)d.get(key)));
             	if (r.descriptor().getFields() != null) {
             		for (Field f : r.descriptor().getFields()) {
             			// return all existing STRING fields
 						if (f.getType() == FieldType.STRING && d.get(f.getName()) != null) {
-            				Field nf = result.descriptor().getFieldByName(f.getName());
-            				if (nf != null)
-            					nf.setValue((String)d.get(f.getName()));
+            				aRecord.descriptor().addField(new Field(f.getName(), f.getType(),(String)d.get(f.getName())));
 						}
             		}
             	}
-
+            	result = aRecord;
         	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_INDEX) != 0) {
 
         		String obj = d.get("object");
