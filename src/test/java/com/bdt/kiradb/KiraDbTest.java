@@ -221,8 +221,7 @@ public class KiraDbTest {
         System.out.println("Found " + q3Results.size() + " records.");
         assertEquals("Incorrect number of records", q3Results.size(), testAccounts.length);
 
-        for (Record o : q3Results) {
-        	Person dp = (Person)o;
+        for (Person dp: q3Results) {
         	db.removeObjectByPrimaryKey(p, dp.getAccount());
         }
         
