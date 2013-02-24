@@ -278,20 +278,20 @@ public class KiraDb {
 	 * @throws ClassNotFoundException
 	 * @throws KiraException
 	 */
-	public Object retrieveObjectByPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException {
+	public Record retrieveObjectByPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException {
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
-        Object result = null;
+        Record result = null;
         if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
 			if (this.backingStore == null) {
 				throw new KiraException("STORE_MODE_BACKING but no backing store set");
 			}
     		if (cacheStore != null) {
-    			result = cacheStore.retrieveObject(xstream, r, value);
+    			result = (Record)cacheStore.retrieveObject(xstream, r, value);
     		}
     		if (result == null) {
     			try {
-    				result = this.backingStore.retrieveObject(xstream, r, value);
+    				result = (Record)this.backingStore.retrieveObject(xstream, r, value);
     			} catch (Exception e) {
     				if (cacheStore != null) {
     					this.cacheStore.removeObject(xstream, (Record) r, value);
@@ -319,17 +319,26 @@ public class KiraDb {
         	Document d = ir.document(tdocs.doc());
         	if (r.descriptor().getStoreMode() == RecordDescriptor.STORE_MODE_NONE) {
         		// if object not returned, then return fields as key,value pairs
-            	HashMap<String, String> results = new HashMap<String,String>();
-            	results.put(r.getPrimaryKeyName(), (String)d.get(key));
+            	try {
+					result = r.getClass().newInstance();
+				} catch (InstantiationException e) {
+					throw new KiraException("InstantiationException " + e.getMessage());
+				} catch (IllegalAccessException e) {
+					throw new KiraException("IllegalAccessException " + e.getMessage());
+				}
+				System.out.println("r: " + result + " primary key: " + r.descriptor().getPrimaryKey());
+				System.out.println("result: " + result + " primary key: " + result.descriptor().getPrimaryKey());
+            	result.descriptor().getPrimaryKey().setValue((String)d.get(key));
             	if (r.descriptor().getFields() != null) {
             		for (Field f : r.descriptor().getFields()) {
-            			// return all existing fields
-            			if (d.get(f.getName()) != null)
-            				results.put(f.getName(), (String)d.get(f.getName()));
+            			// return all existing STRING fields
+						if (f.getType() == FieldType.STRING && d.get(f.getName()) != null) {
+            				Field nf = result.descriptor().getFieldByName(f.getName());
+            				if (nf != null)
+            					nf.setValue((String)d.get(f.getName()));
+						}
             		}
             	}
-            	result = results;
-            	
             	
         	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_INDEX) != 0) {
 
@@ -342,7 +351,7 @@ public class KiraDb {
 
         		ois = xstream.createObjectInputStream(fis);
 
-        		result = ois.readObject();
+        		result = (Record)ois.readObject();
 
         		ois.close();
         	}

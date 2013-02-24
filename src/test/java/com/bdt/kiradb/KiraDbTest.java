@@ -73,27 +73,41 @@ public class KiraDbTest {
         db.storeObject(exp2);
         
         System.out.println("Reading expense... 1");
-        Map<String,String> res1 = (Map<String, String>) db.retrieveObjectByPrimaryKey(exp1, exp1.getTxId());
+        Record res1 = db.retrieveObjectByPrimaryKey(exp1, exp1.getTxId());
         assertNotNull("The result should not be null", res1);
 
         db.dumpDocuments(exp1.getRecordName());
         
-        for (String key : res1.keySet()) {
-        	System.out.println("  1 key: " + key + " value: "
-        			+ res1.get(key));
+    	System.out.println("  1 key: " + res1.getPrimaryKeyName() + " value: "
+    			+ res1.descriptor().getPrimaryKey().getValue());
+
+        for (Field f : res1.descriptor().getFields()) {
+        	System.out.println("  1 key: " + f.getName() + " value: "
+        			+ f.getValue());
         }
 
         System.out.println("Reading expense... 2");
 
-        Map<String,String> res2 = (Map<String, String>) db.retrieveObjectByPrimaryKey(exp2, exp2.getTxId());
+        Record res2 = db.retrieveObjectByPrimaryKey(exp2, exp2.getTxId());
         assertNotNull("The result should not be null", res2);
-        for (String key : res2.keySet()) {
-        	System.out.println("  2 key: " + key + " value: "
-        			+ res2.get(key));
+        
+    	System.out.println("  2 key: " + res2.getPrimaryKeyName() + " value: "
+    			+ res2.descriptor().getPrimaryKey().getValue());
+
+    	for (Field f : res2.descriptor().getFields()) {
+        	System.out.println("  2 key: " + f.getName() + " value: "
+        			+ f.getValue());
         }
 
-        assertEquals("Expected txId " +  exp1.getTxId() + " but got: " + res1.get(exp1.getPrimaryKeyName()), exp1.getTxId(), res1.get(exp1.getPrimaryKeyName()));
-        assertEquals("Expected txId " +  exp2.getTxId() + " but got: " + res2.get(exp2.getPrimaryKeyName()), exp2.getTxId(), res2.get(exp2.getPrimaryKeyName()));
+        assertEquals("Expected txId " +  exp1.getTxId() +
+        		" but got: " + 
+        		res1.descriptor().getPrimaryKey().getValue(),
+        		exp1.getTxId(), res1.descriptor().getPrimaryKey().getValue());
+
+        assertEquals("Expected txId " +  exp2.getTxId() +
+        		" but got: " + 
+        		res2.descriptor().getPrimaryKey().getValue(),
+        		exp2.getTxId(), res2.descriptor().getPrimaryKey().getValue());
 
         List<Object> q1Results = db.executeQuery(exp1, Expense.CATEGORY, exp1.getCategory(), 10, 0, Expense.DATE, true);
         assertNotNull("The query 1 result should not be null", q1Results);
