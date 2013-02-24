@@ -109,36 +109,36 @@ public class KiraDbTest {
         		res2.descriptor().getPrimaryKey().getValue(),
         		exp2.getTxId(), res2.descriptor().getPrimaryKey().getValue());
 
-        List<Object> q1Results = db.executeQuery(exp1, Expense.CATEGORY, exp1.getCategory(), 10, 0, Expense.DATE, true);
+        List<Record> q1Results = db.executeQuery(exp1, Expense.CATEGORY, exp1.getCategory(), 10, 0, Expense.DATE, true);
         assertNotNull("The query 1 result should not be null", q1Results);
         System.out.println("query 1 matched " + q1Results.size() + " records");
         assertEquals("query 1 expected exactly one result",  q1Results.size(), 1);
 
-        for (Object id: q1Results) {
-        	System.out.println("query 1 matched id: " + (String)id);
+        for (Record r: q1Results) {
+        	System.out.println("query 1 matched id: " + r.descriptor().getPrimaryKey().getValue());
 
         }
-        assertEquals("Category query 1 failed", (String)q1Results.get(0), exp1.getTxId());
+        assertEquals("Category query 1 failed", q1Results.get(0).descriptor().getPrimaryKey().getValue(), exp1.getTxId());
 
-        List<Object> q2Results = db.executeQuery(exp1, Expense.MEMO, "garbage", 10, 0, Expense.DATE, true);
+        List<Record> q2Results = db.executeQuery(exp1, Expense.MEMO, "garbage", 10, 0, Expense.DATE, true);
         assertNotNull("The query 2 result should not be null", q2Results);
         System.out.println("query 2 matched " + q2Results.size() + " records");
         assertEquals("query 2 expected exactly one result",  q2Results.size(), 1);
 
-        for (Object id: q2Results) {
-        	System.out.println("query 2 matched id: " + (String)id);
+        for (Record r: q2Results) {
+        	System.out.println("query 2 matched id: " + r.descriptor().getPrimaryKey().getValue());
         }
-        assertEquals("Memo query 2 failed", (String)q2Results.get(0), exp2.getTxId());
+        assertEquals("Memo query 2 failed", q2Results.get(0).descriptor().getPrimaryKey().getValue(), exp2.getTxId());
 
-        List<Object> q3Results = db.executeQuery(exp1, null, null, 10, 0, Expense.DATE, true);
+        List<Record> q3Results = db.executeQuery(exp1, null, null, 10, 0, Expense.DATE, true);
         assertNotNull("The query 3 result should not be null", q3Results);
         System.out.println("query 3 matched " + q3Results.size() + " records");
         assertEquals("query 3 expected exactly two results",  q3Results.size(), 2);
-        for (Object id: q3Results) {
-        	System.out.println("query 3 matched id: " + (String)id);
+        for (Record r: q3Results) {
+        	System.out.println("query 3 matched id: " + r.descriptor().getPrimaryKey().getValue());
         }
-        assertEquals("query 3 incorrect order of results",  (String)q3Results.get(0), exp2.getTxId());
-        assertEquals("query 3 possible duplicate results",  (String)q3Results.get(1), exp1.getTxId());
+        assertEquals("query 3 incorrect order of results",  q3Results.get(0).descriptor().getPrimaryKey().getValue(), exp2.getTxId());
+        assertEquals("query 3 possible duplicate results",  q3Results.get(1).descriptor().getPrimaryKey().getValue(), exp1.getTxId());
 
     }
     
@@ -190,7 +190,7 @@ public class KiraDbTest {
         	
         }
 
-        List<Object> q1Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
+        List<Record> q1Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
         assertNotNull("q1Results result should not be null", q1Results);
         System.out.println("Found " + q1Results.size() + " records. Deleting index...");
         assertEquals("Incorrect number of records", q1Results.size(), testAccounts.length);
@@ -198,7 +198,7 @@ public class KiraDbTest {
         db.deleteIndex();
         
         try {
-        	List<Object> q2Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
+        	List<Record> q2Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
             assertNotNull("q2Results result should not be null", q2Results);
             System.out.println("Found " + q2Results.size() + " records. Recreating index...");
         	
@@ -216,12 +216,12 @@ public class KiraDbTest {
             rp = (Person)db.nextObject(p);
         }
         
-        List<Object> q3Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
+        List<Record> q3Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
         assertNotNull("q3Results result should not be null", q3Results);
         System.out.println("Found " + q3Results.size() + " records.");
         assertEquals("Incorrect number of records", q3Results.size(), testAccounts.length);
 
-        for (Object o : q3Results) {
+        for (Record o : q3Results) {
         	Person dp = (Person)o;
         	db.removeObjectByPrimaryKey(p, dp.getAccount());
         }
@@ -241,12 +241,12 @@ public class KiraDbTest {
         db.storeObject(doc);
 
 
-        List<Object> qResults = db.executeQuery(new TextDocument(), TextDocument.BODY, "decimal", 10, 0, null, true);
+        List<Record> qResults = db.executeQuery(new TextDocument(), TextDocument.BODY, "decimal", 10, 0, null, true);
 
         assertNotNull("The CACM query result should not be null", qResults);
 
-        for (Object id: qResults) {
-        	System.out.println("CACM query matched id: " + (String)id);
+        for (Record r: qResults) {
+        	System.out.println("CACM query matched id: " + (String)r.descriptor().getPrimaryKey().getValue());
         }
 
     }

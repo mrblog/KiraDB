@@ -86,7 +86,7 @@ public class CACMDocTest {
         System.out.println("Indexed docs: " + nDocs);
 
         long startTime = System.nanoTime();
-    	List<Object> qResults = db.executeQuery(new TextDocument(), TextDocument.BODY, "system", Integer.MAX_VALUE, 0, null, true);
+    	List<Record> qResults = db.executeQuery(new TextDocument(), TextDocument.BODY, "system", Integer.MAX_VALUE, 0, null, true);
     	long endTime = System.nanoTime();
 
         long duration = endTime - startTime;
