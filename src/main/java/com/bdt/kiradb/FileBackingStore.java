@@ -127,7 +127,7 @@ public class FileBackingStore extends BackingStore {
 	}
 
 	@Override
-	public Object retrieveObject(XStream xstream, Record r, String value)
+	public<T extends Record> T retrieveObject(XStream xstream, Record r, String value)
 			throws KiraException, IOException, ClassNotFoundException {
 		String key = makeKey(r, value);
 		
@@ -154,7 +154,7 @@ public class FileBackingStore extends BackingStore {
 		} finally {
 			unlock(lck);
 		}
-		return result;
+		return (T)result;
 	}
 
 	public void removeObject(XStream xstream, Record r, String value) throws KiraException {
@@ -176,16 +176,16 @@ public class FileBackingStore extends BackingStore {
 
 
 	@Override
-	Object firstObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
+	public<T extends Record> T firstObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
         File directory = new File(rootpath + "/" + r.getRecordName());
         filesList = directory.listFiles();
         filesIndex = 0;
-		return nextObject(xstream, r);
+		return (T)nextObject(xstream, r);
 	}
 
 
 	@Override
-	Object nextObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
+    public<T extends Record> T nextObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
 		while (filesIndex < filesList.length) {
 			File fileEntry = filesList[filesIndex++];
 			if (fileEntry.isFile()) {

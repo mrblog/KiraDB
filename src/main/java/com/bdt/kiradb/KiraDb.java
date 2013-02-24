@@ -275,20 +275,20 @@ public class KiraDb {
 	 * @throws ClassNotFoundException
 	 * @throws KiraException
 	 */
-	public Record retrieveObjectByPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException {
+	public<T extends Record> T retrieveObjectByPrimaryKey(Record r, String value) throws IOException, ClassNotFoundException, KiraException {
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
-        Record result = null;
+        T result = null;
         if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
 			if (this.backingStore == null) {
 				throw new KiraException("STORE_MODE_BACKING but no backing store set");
 			}
     		if (cacheStore != null) {
-    			result = (Record)cacheStore.retrieveObject(xstream, r, value);
+    			result = (T)cacheStore.retrieveObject(xstream, r, value);
     		}
     		if (result == null) {
     			try {
-    				result = (Record)this.backingStore.retrieveObject(xstream, r, value);
+    				result = (T)this.backingStore.retrieveObject(xstream, r, value);
     			} catch (Exception e) {
     				if (cacheStore != null) {
     					this.cacheStore.removeObject(xstream, (Record) r, value);
@@ -352,7 +352,7 @@ public class KiraDb {
 						}
             		}
             	}
-            	result = aRecord;
+            	result = (T) aRecord;
         	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_INDEX) != 0) {
 
         		String obj = d.get("object");
@@ -364,7 +364,7 @@ public class KiraDb {
 
         		ois = xstream.createObjectInputStream(fis);
 
-        		result = (Record)ois.readObject();
+        		result = (T)ois.readObject();
 
         		ois.close();
         	}
@@ -402,7 +402,7 @@ public class KiraDb {
 
 	 */
 
-	public List<Record> executeQuery(Record r, String queryFieldName, String querystr, int hitsPerPage, int skipDocs, String sortFieldName, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
+	public<T extends Record> List<T> executeQuery(Record r, String queryFieldName, String querystr, int hitsPerPage, int skipDocs, String sortFieldName, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
 		Field queryField = null;
 		if (queryFieldName != null) {
 			queryField = r.descriptor().getFieldByName(queryFieldName);
@@ -430,7 +430,7 @@ public class KiraDb {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public List<Record> executeQuery(Record r, Field queryField, String querystr, int hitsPerPage, int skipDocs, Field sortField, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
+	public<T extends Record> List<T> executeQuery(Record r, Field queryField, String querystr, int hitsPerPage, int skipDocs, Field sortField, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
 		List<Document> docs;
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
@@ -468,6 +468,8 @@ public class KiraDb {
                		final RecordDescriptor descriptor = new RecordDescriptor(r.getRecordName());
                     final String recordName = r.getRecordName();
                     final String pkName = r.getPrimaryKeyName();
+                    System.out.println("@@@ A");
+
                 	 Record aRecord = new Record() {
                          @Override
                          public RecordDescriptor descriptor() {
@@ -536,7 +538,7 @@ public class KiraDb {
         	}
 
         }
-        return results;
+        return (List<T>) results;
 	}
 
 	public void dumpDocuments(String type) throws KiraException, KiraCorruptIndexException, IOException {
@@ -868,24 +870,24 @@ public class KiraDb {
         }
 	}
 
-	public Object firstObject(Record r) throws KiraException, IOException, ClassNotFoundException {
+	public<T extends Record> T firstObject(Record r) throws KiraException, IOException, ClassNotFoundException {
 		if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) == 0) {
 			throw new KiraException("No backing store associated with record class");
 		}
 		if (this.backingStore == null) {
 			throw new KiraException("No backing store activated");
 		}
-	    return this.backingStore.firstObject(xstream, r);
-	}
+        return (T) this.backingStore.firstObject(xstream, r);
+    }
 
-	public Object nextObject(Record r) throws KiraException, IOException, ClassNotFoundException {
+	public<T extends Record> T nextObject(Record r) throws KiraException, IOException, ClassNotFoundException {
 		if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) == 0) {
 			throw new KiraException("No backing store associated with record class");
 		}
 		if (this.backingStore == null) {
 			throw new KiraException("No backing store activated");
 		}
-	    return this.backingStore.nextObject(xstream, r);
+        return (T) this.backingStore.nextObject(xstream, r);
 
-	}
+    }
 }

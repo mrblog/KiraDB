@@ -119,7 +119,7 @@ public class S3BackingStore extends BackingStore {
 
     }
 
-    public Object retrieveObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException {
+    public<T extends Record> T retrieveObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException {
         String key = makeKey(r, value);
 
         S3Object objectComplete;
@@ -138,7 +138,7 @@ public class S3BackingStore extends BackingStore {
         }
         Object result = ois.readObject();
         ois.close();
-        return result;
+        return (T)result;
     }
 
     @Override
@@ -154,7 +154,7 @@ public class S3BackingStore extends BackingStore {
     }
 
 	@Override
-	Object firstObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
+    public<T extends Record> T firstObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
 		// will this really work if there are millions of records?
 	    try {
 			objectsList = s3Service.listObjects(bucket, r.getRecordName() + "/", "/", Long.MAX_VALUE);
@@ -163,11 +163,11 @@ public class S3BackingStore extends BackingStore {
             throw new KiraException("S3ServiceException " + e.getErrorMessage());
 		}
 	    objectIndex = 0;
-	    return nextObject(xstream, r);
+	    return (T) nextObject(xstream, r);
 	}
 
 	@Override
-	Object nextObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
+    public<T extends Record> T nextObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
 		if (objectIndex < objectsList.length) {
 			S3Object recordObject = objectsList[objectIndex++];
 			String[] parts = recordObject.getKey().split("/");

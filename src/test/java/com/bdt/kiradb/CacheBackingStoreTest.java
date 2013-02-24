@@ -1,10 +1,9 @@
 package com.bdt.kiradb;
 
-import java.util.Date;
-
+import com.bdt.kiradb.mykdbapp.Person;
 import org.junit.Test;
 
-import com.bdt.kiradb.mykdbapp.Person;
+import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -24,7 +23,7 @@ public class CacheBackingStoreTest {
 		System.out.println("Writing person...");
 		cache.storeObject(null, p);
 		System.out.println("Reading person...");
-		Person np = (Person) cache.retrieveObject(null, p, p.getAccount());
+		Person np = cache.retrieveObject(null, p, p.getAccount());
 		System.out.println("Read object: " + np.getName());
 		assertNotNull("The result should not be null", np);
 		assertEquals("The person's name when read is not the same as when written", p.getName(), np.getName());

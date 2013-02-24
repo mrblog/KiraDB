@@ -1,21 +1,20 @@
 package com.bdt.kiradb;
 
-import java.io.IOException;
-
-
 import com.thoughtworks.xstream.XStream;
+
+import java.io.IOException;
 
 public abstract class BackingStore {
 	
 	abstract void storeObject(XStream xstream, Record r) throws IOException, KiraException;
 	
-	abstract Object retrieveObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException;
+	abstract <T extends Record> T retrieveObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException;
 
 	abstract void removeObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException;
 
-	abstract Object firstObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException;
+	abstract <T extends Record> T firstObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException;
 	
-	abstract Object nextObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException;
+	abstract <T extends Record> T nextObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException;
 	
 	protected String makeKey(Record r) {
 		return makeKey(r, (String)r.descriptor().getPrimaryKey().getValue());

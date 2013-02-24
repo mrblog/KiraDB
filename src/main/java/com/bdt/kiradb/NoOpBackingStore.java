@@ -10,7 +10,7 @@ public class NoOpBackingStore extends BackingStore {
     }
 
     @Override
-    Object retrieveObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException {
+    public<T extends Record> T retrieveObject(XStream xstream, Record r, String value) throws KiraException, IOException, ClassNotFoundException {
         return null;
     }
 
@@ -19,13 +19,13 @@ public class NoOpBackingStore extends BackingStore {
     }
 
 	@Override
-	Object firstObject(XStream xstream, Record r) throws KiraException,
+    public<T extends Record> T firstObject(XStream xstream, Record r) throws KiraException,
 			IOException, ClassNotFoundException {
 		return null;
 	}
 
 	@Override
-	Object nextObject(XStream xstream, Record r) throws KiraException,
+    public<T extends Record> T nextObject(XStream xstream, Record r) throws KiraException,
 			IOException, ClassNotFoundException {
 		return null;
 	}

@@ -49,7 +49,7 @@ public class KiraDbTest {
         System.out.println("Writing person...");
         db.storeObject(p);
         System.out.println("Reading person...");
-        Person np = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());
+        Person np = db.retrieveObjectByPrimaryKey(p, p.getAccount());
         System.out.println("Read object: " + np.getName());
         assertNotNull("The result should not be null", np);
         assertEquals("The person's name when read is not the same as when written", p.getName(), np.getName());
@@ -162,7 +162,7 @@ public class KiraDbTest {
         System.out.println("stored object: " + fData);
         
         System.out.println("Reading person...");
-        Person np = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());
+        Person np = db.retrieveObjectByPrimaryKey(p, p.getAccount());
         System.out.println("Read object: " + np.getName());
         assertNotNull("The result should not be null", np);
         assertEquals("The person's name when read is not the same as when written", p.getName(), np.getName());
@@ -171,7 +171,7 @@ public class KiraDbTest {
 
         assertFalse("The file was not removed properly", objectFile.exists());
         
-        Person nnp = (Person) db.retrieveObjectByPrimaryKey(p, p.getAccount());
+        Person nnp = db.retrieveObjectByPrimaryKey(p, p.getAccount());
         assertNull("The result should be null", nnp);
         
         // test rebuilding the index from backing store
@@ -190,7 +190,7 @@ public class KiraDbTest {
         	
         }
 
-        List<Record> q1Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
+        List<Person> q1Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
         assertNotNull("q1Results result should not be null", q1Results);
         System.out.println("Found " + q1Results.size() + " records. Deleting index...");
         assertEquals("Incorrect number of records", q1Results.size(), testAccounts.length);
@@ -198,7 +198,7 @@ public class KiraDbTest {
         db.deleteIndex();
         
         try {
-        	List<Record> q2Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
+        	List<Person> q2Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
             assertNotNull("q2Results result should not be null", q2Results);
             System.out.println("Found " + q2Results.size() + " records. Recreating index...");
         	
@@ -209,14 +209,14 @@ public class KiraDbTest {
         
         db.createIndex();
         
-        Person rp = (Person)db.firstObject(p);
+        Person rp = db.firstObject(p);
         while (rp != null) {
             System.out.println("Reindexing person... " + rp.getAccount());
             db.storeObject(rp, false);
             rp = (Person)db.nextObject(p);
         }
         
-        List<Record> q3Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
+        List<Person> q3Results = db.executeQuery(p, (String)null, null, 10, 0, null, true);
         assertNotNull("q3Results result should not be null", q3Results);
         System.out.println("Found " + q3Results.size() + " records.");
         assertEquals("Incorrect number of records", q3Results.size(), testAccounts.length);
@@ -239,7 +239,6 @@ public class KiraDbTest {
     	doc.setBody("\n\nFingers or Fists? (The Choice of Decimal or Binary Representation)\n\nThe binary number system offers many advantages\nover a decimal representation for a high-performance, \ngeneral-purpose computer.  The greater simplicity of\na binary arithmetic unit and the greater compactness \nof binary numbers both contribute directly to arithmetic\nspeed.  Less obvious and perhaps more important \nis the way binary addressing and instruction formats can\nincrease the overall performance.  Binary addresses \nare also essential to certain powerful operations which\nare not practical with decimal instruction formats. \n On the other hand, decimal numbers are essential for\ncommunicating between man and the computer.  In \napplications requiring the processing of a large volume\nof inherently decimal input and output data, \nthe time for decimal-binary conversion needed by a purely\nbinary computer may be significant.  A slower \ndecimal adder may take less time than a fast binary adder\ndoing an addition and two conversions.  A careful \nreview of the significance of decimal and binary addressing\nand both binary and decimal data arithmetic, \nsupplemented by efficient conversion instructions.\n\nCACM December, 1959\n\nBuchholz, W.\n\nCA591202 JB March 22, 1978  3:47 PM\n\n40	5	40\n40	5	40\n40	5	40\n\n");
 
         db.storeObject(doc);
-
 
         List<Record> qResults = db.executeQuery(new TextDocument(), TextDocument.BODY, "decimal", 10, 0, null, true);
 

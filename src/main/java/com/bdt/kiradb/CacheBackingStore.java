@@ -1,13 +1,12 @@
 package com.bdt.kiradb;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.thoughtworks.xstream.XStream;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 
-import com.thoughtworks.xstream.XStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class CacheBackingStore extends BackingStore {
 
@@ -35,12 +34,12 @@ public class CacheBackingStore extends BackingStore {
 	}
 
 	@Override
-	Object retrieveObject(XStream xstream, Record r, String value) {
+	public<T extends Record> T retrieveObject(XStream xstream, Record r, String value) {
 		String key = makeKey(r, value);
 
 		Element element = cache.get(key);
         if (element != null) {
-                return (Object) element.getObjectValue();
+                return (T) element.getObjectValue();
         }
 		return null;
 	}
@@ -55,14 +54,14 @@ public class CacheBackingStore extends BackingStore {
 
 
 	@Override
-	Object firstObject(XStream xstream, Record r) throws KiraException,
+	public<T extends Record> T firstObject(XStream xstream, Record r) throws KiraException,
 			IOException, ClassNotFoundException {
 		return null;
 	}
 
 
 	@Override
-	Object nextObject(XStream xstream, Record r) throws KiraException,
+	public<T extends Record> T nextObject(XStream xstream, Record r) throws KiraException,
 			IOException, ClassNotFoundException {
 		return null;
 	}
