@@ -54,6 +54,8 @@ public class KiraDb {
 
 	private final static String TYPE_KEY = "type";
 
+	private static final int DEFAULT_PER_PAGE = 100;
+
     private final File indexDirectory;
 
     private XStream xstream;
@@ -389,6 +391,40 @@ public class KiraDb {
 	 * sortFieldName may be specified to order the results, otherwise a
 	 * default "date" field ordering is used, or object ordering (none) if
 	 * no "date" field exists.
+	 * 
+	 * @param r An instance of the Class / Record
+	 * @param queryFieldName The name to the field to query
+	 * @param querystr The query string
+	 * @param hitsPerPage The number of records to return
+	 * @param skipDocs The number of records to skip
+	 * @param sortFieldName Optional sort field name
+	 * @param reverse Set to true to reverse the sort order
+	 * 
+	 * @return List<T extends Record> list of matching records
+	 * 
+	 * @throws KiraException
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public<T extends Record> List<T> executeQuery(Record r, String queryFieldName, String querystr, String sortFieldName, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
+		return executeQuery(r, queryFieldName, querystr, DEFAULT_PER_PAGE, 0, sortFieldName, reverse);
+	}
+	
+	/**
+	 * Query for matching records
+	 * <p>
+	 * Set queryFieldName to restrict results to records where that fields matches
+	 * the querystr value.
+	 * <p>
+	 * If queryFieldName is null and querystr is specified, the first field in
+	 * the Record descriptor is selected by default.
+	 * <p>
+	 * If both queryFieldName and querystr are null then all records match
+	 * (useful for retrieving sorted lists of Records).
+	 * <p>
+	 * sortFieldName may be specified to order the results, otherwise a
+	 * default "date" field ordering is used, or object ordering (none) if
+	 * no "date" field exists.
 	 *
 	 * @param r An instance of the Class / Record
 	 * @param queryFieldName The name to the field to query
@@ -398,7 +434,7 @@ public class KiraDb {
 	 * @param sortFieldName Optional sort field name
 	 * @param reverse Set to true to reverse the sort order
 	 *
-	 * @return List<Object> list of matching objects or list of matching keys
+	 * @return List<T extends Record> list of matching objects
 
 	 */
 

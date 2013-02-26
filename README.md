@@ -10,7 +10,7 @@ For example, let's say you're tracking high scores for a game. A `GameScore` cla
 
 	public class GameScore implements Record {
 	
-		private String playerId;
+		private String gameNumber;
 		private int score;
 		private String playerName;
 		private String team;
@@ -19,18 +19,18 @@ For example, let's say you're tracking high scores for a game. A `GameScore` cla
 		public GameScore() {
 		}
 
-		public GameScore(String playerId, int score, String playerName, Boolean cheatMode) {
-			setPlayerId(playerId);
+		public GameScore(String gameNumber, int score, String playerName, Boolean cheatMode) {
+			setGameNumber(gameNumber);
 			setScore(score);
 			setPlayerName(playerName);
 			setCheatMode(cheatMode);
 		}
-		public void setPlayerId(String playerId) {
-			this.playerId = playerId;
+		public void setGameNumber(String gameNumber) {
+			this.gameNumber = gameNumber;
 		}
 	
-		public String getPlayerId() {
-			return playerId;
+		public String getGameNumber() {
+			return gameNumber;
 		}
 	
 		public void setScore(int score) {
@@ -77,7 +77,8 @@ the `Record` interface:
 	public class GameScore implements Record {
 	
 		private static final String RECORD_NAME = "scores";
-		private static final String PRIMARY_KEY = "playerId";
+		private static final String PRIMARY_KEY = "game";
+		public static final String NAME = "name";
 		public static final String SCORE = "score";
 		public static final String TEAM = "team";
 
@@ -86,7 +87,8 @@ the `Record` interface:
 		@Override
 		public RecordDescriptor descriptor() {
 			RecordDescriptor dr = new RecordDescriptor(RECORD_NAME);
-			dr.setPrimaryKey(new Field(PRIMARY_KEY, FieldType.STRING, getPlayerId()));
+			dr.setPrimaryKey(new Field(PRIMARY_KEY, FieldType.STRING, getGameNumber()));
+			dr.addField(new Field(NAME, FieldType.STRING, getPlayerName()));
 			dr.addField(new Field(SCORE, FieldType.NUMBER, getScore()));
 			dr.addField(new Field(TEAM, FieldType.STRING, getTeam()));
 			dr.setStoreMode(RecordDescriptor.STORE_MODE_INDEX);
@@ -115,7 +117,7 @@ These methods inform KiraDB of the data model associated with the Object Class.
 
 Keys and Field names must be alphanumeric strings. Field values can be strings, numbers, dates, or full-text fields (more below). The Object itself can contain any kind of Java Object, Strings, Dates, Maps, Arrays, etc.
 
-Each `Record` is an instance of a specific subclass with a class name and record name  that you can use to distinguish different sorts of data. For example, we call the high score object a `GameScore` class with the record name `"scores"` (`RECORD_NAME`). We recommend that you NameYourClassesLikeThis and nameYourKeysLikeThis, just to keep your code looking pretty.
+Each `Record` is an instance of a specific subclass with a class name and record name  that you can use to distinguish different sorts of data. For example, we call the high score object a `GameScore` class with the record name `"scores"` (`RECORD_NAME`). 
 
 To create a new subclass, implement the `Record` interface. KiraDB will return instances of the new class for any Object with the specified record name
 
@@ -142,7 +144,7 @@ Let's say you want to save the GameScore described above to KiraDB.
 
 ```
 
-	GameScore p1 = new GameScore("kevin", 1337, "Kevin Blake", false);
+	GameScore p1 = new GameScore("Game157", 1337, "Kevin Blake", false);
 	db.storeObject(p1);
 ```
 
@@ -153,7 +155,7 @@ If you have the primary key value, you can retrieve the Object using the `retrie
 
 ```
 
-	GameScore theScore = (GameScore) db.retrieveObjectByPrimaryKey("kevin");
+	GameScore theScore = (GameScore) db.retrieveObjectByPrimaryKey("Game157");
 
 ```
 
@@ -167,14 +169,22 @@ The general approach is to create a query, put conditions on it, and then retrie
 
 ```
 
-        List<Object> qResults = db.executeQuery(new GameScore(), GameScore.TEAM, "shaggy", 10, 0, GameScore.SCORE, true);
+        List<GameScore> qResults = db.executeQuery(new GameScore(), GameScore.TEAM, "shaggy", 10, 0, GameScore.SCORE, true);
 
 
 ```
 
 This returns scores belonging to team "shaggy" returning 10 results at a time, skipping 0 results (i.e. starting at 0), sorting by SCORE in reverse sort order (highest score first).
 
+### Counting Records
 
+If you just need to count how many objects match a query, but you do not need to retrieve all the objects that match, you can use getTotalHits(). For example, to count how many games have been played by a particular player:
+
+```
+        List<GameScore> qResults = db.executeQuery(new GameScore(), GameScore.NAME, "Kevin Blake", 1, 0, GameScore.SCORE, true);
+	int count = db.getTotalHits();
+
+```
 
 ### Primary Keys
 
