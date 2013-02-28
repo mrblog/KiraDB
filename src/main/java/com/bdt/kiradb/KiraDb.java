@@ -395,8 +395,6 @@ public class KiraDb {
 	 * @param r An instance of the Class / Record
 	 * @param queryFieldName The name to the field to query
 	 * @param querystr The query string
-	 * @param hitsPerPage The number of records to return
-	 * @param skipDocs The number of records to skip
 	 * @param sortFieldName Optional sort field name
 	 * @param reverse Set to true to reverse the sort order
 	 * 

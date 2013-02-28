@@ -8,7 +8,7 @@ For example, let's say you're tracking high scores for a game. A `GameScore` cla
 
 ```
 
-	public class GameScore implements Record {
+	public class GameScore {
 	
 		private String gameNumber;
 		private int score;
@@ -186,6 +186,18 @@ If you just need to count how many objects match a query, but you do not need to
 
 ```
 
+### Paging Through Results
+
+To page through query results, use the `hitsPerPage` and `skipDocs` parameters:
+
+```
+
+       List<GameScore> qResults = db.executeQuery(new GameScore(), GameScore.TEAM, "shaggy", PER_PAGE, (page-1)*PER_PAGE, GameScore.SCORE, true);
+
+```
+
+where `PER_PAGE` is the number of objects per page and `page` in this case is the page number (starting from 1).
+
 ### Primary Keys
 
 Primary Keys in KiraDB must be `String` fields (`FieldType.STRING`) which are simple case-sensitive string values. The Primary Key is unique across all records of this class.
@@ -198,13 +210,29 @@ The `GameScore` example adds a field for the user's score. This field is to be t
 
 KiraDB can operate in multiple modes:
 
-1. Indexing (supporting searching and sorting operations) only (no storage of the full object)
-2. Storing Objects in the KiraDB index
-3. Storing Objects in a separate Backing Store (`BackingStore`)
+1. `STORE_MODE_NONE` Indexing (supporting searching and sorting operations) only (no storage of the full object)
+2. `STORE_MODE_INDEX ` Storing Objects in the KiraDB index
+3. `STORE_MODE_BACKING ` Storing Objects in a separate Backing Store (`BackingStore`)
 
-KiraDB includes two included backing store implementations, a simple File-based object store (`FileBackingStore`) and a Amazon S3 based backing store (`S3BackingStore`)
+More details on these modes is provided in the sections that follow.
+
+#### `STORE_MODE_NONE` Indexing only
+
+In this mode, KiraDB is only performing indexing (searching and sorting) for the user. Object storage and retrieval is entirely the responsibility of the user. Record objects returned by KiraDB contain only the primary key and the fields associated with the Record class.
+
+#### `STORE_MODE_INDEX` Objects stored in the KiraDB index
+
+In this mode, KiraDB will store user objects with the index. KiraDB will return the full object class implementing the `Record` interface as shown in the examples above for the GameScore object class. However, in this mode, there is no authoritative data store other than the index, which reduces redundancy. If the index should become corrupt, user data could be lost.
+
+#### `STORE_MODE_BACKING` Using a Backing Store
+
+In this mode, KiraDB works with a connected `BackingStore` fas the authoritative  object repository. If the index should become corrupt, it could be rebuilt from the backing store.
+
+KiraDB includes two included backing store implementations, a simple File-based object store (`FileBackingStore`) and an Amazon S3 based backing store (`S3BackingStore`)
 
 Users can provide their own custom backing store by implementing their own `BackingStore` class.
+
+Convenience classes `S3KiraDB` and `FileSystemKiraDb` are provided for constructing a Core KiraDB instance configured with the corresponding backing store. Refer to their Javadocs for information on their use.
 
 ### Record, Key, and Field Names
 

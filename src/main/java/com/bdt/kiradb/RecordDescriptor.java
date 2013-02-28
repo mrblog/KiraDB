@@ -25,7 +25,7 @@ public class RecordDescriptor {
 	private int storeMode;
 	
 		/**
-	 * Construct a RecordDescriptor with the given name, with default object store mode (false)
+	 * Construct a RecordDescriptor with the given name, with default object store mode (STORE_MODE_NONE)
 	 * 
 	 * @param recordName The globally unique name identifying this record class (table) 
 	 */
@@ -37,14 +37,14 @@ public class RecordDescriptor {
 	 * Construct a RecordDescriptor with the given name and object store mode
 	 * 
 	 * @param recordName The globally unique name identifying this record class (table) 
-	 * @param storeObjects Specifies whether objects should be stored.
+	 * @param storeMode Specifies the storage mode for this record class
 	 */
-	public RecordDescriptor(String recordName, Boolean storeObjects) {
+	public RecordDescriptor(String recordName, int storeMode) {
 		setRecordName(recordName);
-		setStoreMode(STORE_MODE_NONE);
+		setStoreMode(storeMode);
 	}
 	/**
-	 * Construct a RecordDescriptor with the given name and primary key using default object store mode (false)
+	 * Construct a RecordDescriptor with the given name and primary key using default object store mode (STORE_MODE_NONE)
 	 * 
 	 * @param recordName The globally unique name
 	 * @param primaryKey The primary key
@@ -59,12 +59,12 @@ public class RecordDescriptor {
 	 * 
 	 * @param recordName The globally unique name
 	 * @param primaryKey The primary key
-	 * @param storeObjects Specifies whether objects should be stored.
+	 * @param storeMode Specifies the storage mode for this record class
 	 */
-	public RecordDescriptor(String recordName, Field primaryKey, Boolean storeObjects) {
+	public RecordDescriptor(String recordName, Field primaryKey, int storeMode) {
 		setRecordName(recordName);
 		setPrimaryKey(primaryKey);
-		setStoreMode(STORE_MODE_NONE);
+		setStoreMode(storeMode);
 	}
 	/**
 	 * Set unique record name (table name)

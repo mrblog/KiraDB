@@ -67,7 +67,7 @@ public class S3KiraDB extends KiraDb {
      * A no-op method that does nothing.  The backing store will have already been set by virtue of using this class to begin with.
      *
      * @param backingStore
-     * @return
+     * @return KiraDb KiraDB instance
      */
     public KiraDb setBackingStore(BackingStore backingStore) {
         return this;
