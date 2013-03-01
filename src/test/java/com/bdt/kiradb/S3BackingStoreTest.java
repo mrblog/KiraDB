@@ -37,7 +37,6 @@ public class S3BackingStoreTest {
         } else {
             // disable caching to ensure the S3 store is read and written
             db = new S3KiraDB(Utils.makeTemporaryDirectory(), true, key, secret, bucket);
-            db.createIndex();
             System.out.printf("S3 test:  key=%s, secret=%s, bucket=%s\n", key, secret, bucket);
         }
 
@@ -73,8 +72,6 @@ public class S3BackingStoreTest {
         db = new S3KiraDB(Utils.makeTemporaryDirectory(), true);
 
         // Without a valid /s3.properties on the classpath, this test will not reach the next line of code.
-
-        db.createIndex();
 
         Person p = new Person();
         p.setStoreMode(RecordDescriptor.STORE_MODE_BACKING);

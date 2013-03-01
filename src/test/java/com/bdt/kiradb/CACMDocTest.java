@@ -22,7 +22,6 @@ public class CACMDocTest {
     public void setup() throws KiraCorruptIndexException, IOException {
         db = new KiraDb(new File("KiraDBIndex"));
         System.out.println("Creating Index...");
-        db.createIndex();
     }
 
     // Gets run after any method annotated with @Test

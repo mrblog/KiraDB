@@ -71,10 +71,13 @@ public class KiraDb {
 	 * Construct a Core KiraDB instance with specified indexPath
 	 *
 	 * @param indexPath The index path
+	 * @throws IOException 
+	 * @throws KiraCorruptIndexException 
 	 */
-	public KiraDb(File indexPath) {
+	public KiraDb(File indexPath) throws KiraCorruptIndexException, IOException {
 		this.indexDirectory = indexPath;
 		xstream = new XStream();
+		initIndex();
 		try {
 			cacheStore = new CacheBackingStore();
 		} catch (KiraException e) {
@@ -85,10 +88,13 @@ public class KiraDb {
 	 * Construct a Core KiraDB instance with specified indexPath, with cache mode
 	 * @param indexPath The index path
 	 * @param disableCaching Set to true to disable caching
+	 * @throws IOException 
+	 * @throws KiraCorruptIndexException 
 	 */
-	public KiraDb(File indexPath, Boolean disableCaching) {
+	public KiraDb(File indexPath, Boolean disableCaching) throws KiraCorruptIndexException, IOException {
 		this.indexDirectory = indexPath;
 		xstream = new XStream();
+		initIndex();
 		if (!disableCaching) {
 			try {
 				cacheStore = new CacheBackingStore();
@@ -105,12 +111,16 @@ public class KiraDb {
 	 *
 	 * @param indexPath The index path
 	 * @param cacheStore The user-supplied caching BackingStore
+	 * @throws IOException 
+	 * @throws KiraCorruptIndexException 
 	 */
-	public KiraDb(File indexPath, BackingStore cacheStore) {
+	public KiraDb(File indexPath, BackingStore cacheStore) throws KiraCorruptIndexException, IOException {
 		this.indexDirectory = indexPath;
 		xstream = new XStream();
+		initIndex();
 		this.cacheStore = cacheStore;
 	}
+	
 	private IndexWriter getIndexWriter(File indexDir) throws InterruptedException, IOException, CorruptIndexException {
 		IndexWriter writer = null;
 		int nTries = 0;
@@ -809,6 +819,11 @@ public class KiraDb {
 		writer.close();
 	}
 
+	void initIndex() throws KiraCorruptIndexException, IOException {
+		if (!indexDirectory.exists()) {
+			createIndex();
+		}
+	}
 	/**
 	 * Optimize the Index
 	 *
