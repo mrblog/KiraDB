@@ -14,7 +14,7 @@ public class CacheBackingStoreTest {
 	public void testCachingDefault() throws KiraException {
 		CacheBackingStore cache = new CacheBackingStore();
 		
-		assertNotNull("cache shouldnot be null", cache);
+		assertNotNull("cache should not be null", cache);
 		
 		Person p = new Person();
 		p.setAccount("12036");

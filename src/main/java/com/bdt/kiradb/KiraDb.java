@@ -78,9 +78,14 @@ public class KiraDb {
 		this.indexDirectory = indexPath;
 		xstream = new XStream();
 		initIndex();
+		cacheStore = null;
 		try {
+			@SuppressWarnings("unused")
+			Class<?> aClass = Class.forName("net.sf.ehcache.CacheManager");
 			cacheStore = new CacheBackingStore();
 		} catch (KiraException e) {
+			logger.warning("Cannot setup cache: " + e.getMessage());
+		} catch (ClassNotFoundException e) {
 			logger.warning("Cannot setup cache: " + e.getMessage());
 		}
 	}
@@ -95,14 +100,17 @@ public class KiraDb {
 		this.indexDirectory = indexPath;
 		xstream = new XStream();
 		initIndex();
+		cacheStore = null;
 		if (!disableCaching) {
 			try {
+				@SuppressWarnings("unused")
+				Class<?> aClass = Class.forName("net.sf.ehcache.CacheManager");
 				cacheStore = new CacheBackingStore();
 			} catch (KiraException e) {
 				logger.warning("Cannot setup cache: " + e.getMessage());
+			} catch (ClassNotFoundException e) {
+				logger.warning("Cannot setup cache: " + e.getMessage());
 			}
-		} else {
-			cacheStore = null;
 		}
 	}
 
