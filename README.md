@@ -2,6 +2,37 @@
 
 _Description: KiraDB is a simple, lightweight NoSQL-style embedded database Java API_
 
+## Installing
+
+If using Maven, add the repository and dependencies to your pom file:
+
+
+	  <repositories>
+	    <repository>
+	      <id>bdt</id>
+	      <name>BDT/KiraDb</name>
+	      <url>http://mrblog.github.com/KiraDB/maven2</url>
+	    </repository>
+	  </repositories>
+
+Dependencies:
+
+	<dependency>
+	    <groupId>com.bdt</groupId>
+	    <artifactId>kira-db</artifactId>
+	    <version>1.0</version>
+	</dependency>
+
+If you want to compile it yourself, here's how:
+
+    $ git clone https://github.com/mrblog/KiraDB.git
+    $ cd KiraDB
+    $ mvn install       # Requires maven, download from http://maven.apache.org/download.html
+
+You can view the javadocs for this project at: http://mrblog.github.com/KiraDB/apidocs/
+
+## Getting Started
+
 Storing data with KiraDB is built around `Record` interface. Each `Record` class describes  the data model, as a POJO (Plain old Java Object) implementing the `Record` interface.  
 
 For example, let's say you're tracking high scores for a game. A `GameScore` class as follows implements the data model.

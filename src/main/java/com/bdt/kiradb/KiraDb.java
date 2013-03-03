@@ -86,7 +86,7 @@ public class KiraDb {
 		} catch (KiraException e) {
 			logger.warning("Cannot setup cache: " + e.getMessage());
 		} catch (ClassNotFoundException e) {
-			logger.warning("Cannot setup cache: " + e.getMessage());
+			logger.warning("Cannot setup cache: ClassNotFoundException " + e.getMessage());
 		}
 	}
 	/**
@@ -109,7 +109,7 @@ public class KiraDb {
 			} catch (KiraException e) {
 				logger.warning("Cannot setup cache: " + e.getMessage());
 			} catch (ClassNotFoundException e) {
-				logger.warning("Cannot setup cache: " + e.getMessage());
+				logger.warning("Cannot setup cache: ClassNotFoundException " + e.getMessage());
 			}
 		}
 	}
