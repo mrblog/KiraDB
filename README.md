@@ -31,7 +31,7 @@ If you want to compile it yourself, here's how:
 
 The pre-built jar is available at: 
 
-*   [kira-db-1.0.jar](http://mrblog.github.com/KiraDB/maven2/bdt/kira-db/1.0/kira-db-1.0.jar)
+*   [kira-db-1.0.jar](http://mrblog.github.com/KiraDB/maven2/com/bdt/kira-db/1.0/kira-db-1.0.jar)
 
 You'll need to include versions of the dependencies yourself. You will need the following libraries (See the pom.xml for the more details):
 
