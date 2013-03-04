@@ -26,14 +26,31 @@ Dependencies:
 If you want to compile it yourself, here's how:
 
     $ git clone https://github.com/mrblog/KiraDB.git
-    $ cd KiraDB
+    $ cd KiraDb
     $ mvn install       # Requires maven, download from http://maven.apache.org/download.html
+
+The pre-built jar is available at: 
+
+*   [kira-db-1.0.jar](http://mrblog.github.com/KiraDB/maven2/bdt/kira-db/1.0/kira-db-1.0.jar)
+
+You'll need to include versions of the dependencies yourself. You will need the following libraries (See the pom.xml for the more details):
+
+* commons-io-1.4.jar
+* commons-lang-2.4.jar
+* ehcache-core-2.4.3.jar - optional, required for default caching
+* jets3t-0.7.4.jar - only needed if using Amazon S3 backing store
+* lucene-core-3.0.3.jar
+* lucene-queries-3.0.3.jar
+* slf4j-api-1.6.1.jar
+* slf4j-jdk14-1.6.1.jar
+* xpp3_min-1.1.4c.jar
+* xstream-1.3.1.jar
 
 You can view the javadocs for this project at: http://mrblog.github.com/KiraDB/apidocs/
 
 ## Getting Started
 
-Storing data with KiraDB is built around `Record` interface. Each `Record` class describes  the data model, as a POJO (Plain old Java Object) implementing the `Record` interface.  
+Storing data with KiraDB is built around a `Record` interface. Each `Record` class describes  the data model, as a POJO (Plain old Java Object) implementing the `Record` interface.  
 
 For example, let's say you're tracking high scores for a game. A `GameScore` class as follows implements the data model.
 
@@ -237,7 +254,11 @@ Primary Keys in KiraDB must be `String` fields (`FieldType.STRING`) which are si
 
 The `GameScore` example adds a field for the user's score. This field is to be treated as a `NUMBER` by KiraDB. This effects searching and sorting based on the field.
 
-### Object Store
+### Record, Key, and Field Names
+
+Record, Primary Key, and Field Names are case-sensitive and must consist of letters and digits only.
+
+## Object Store
 
 KiraDB can operate in multiple modes:
 
@@ -247,15 +268,15 @@ KiraDB can operate in multiple modes:
 
 More details on these modes is provided in the sections that follow.
 
-#### `STORE_MODE_NONE` Indexing only
+### `STORE_MODE_NONE` Indexing only
 
 In this mode, KiraDB is only performing indexing (searching and sorting) for the user. Object storage and retrieval is entirely the responsibility of the user. Record objects returned by KiraDB contain only the primary key and the fields associated with the Record class.
 
-#### `STORE_MODE_INDEX` Objects stored in the KiraDB index
+### `STORE_MODE_INDEX` Objects stored in the KiraDB index
 
 In this mode, KiraDB will store user objects with the index. KiraDB will return the full object class implementing the `Record` interface as shown in the examples above for the GameScore object class. However, in this mode, there is no authoritative data store other than the index, which reduces redundancy. If the index should become corrupt, user data could be lost.
 
-#### `STORE_MODE_BACKING` Using a Backing Store
+### `STORE_MODE_BACKING` Using a Backing Store
 
 In this mode, KiraDB works with a connected `BackingStore` fas the authoritative  object repository. If the index should become corrupt, it could be rebuilt from the backing store.
 
@@ -265,6 +286,28 @@ Users can provide their own custom backing store by implementing their own `Back
 
 Convenience classes `S3KiraDB` and `FileSystemKiraDb` are provided for constructing a Core KiraDB instance configured with the corresponding backing store. Refer to their Javadocs for information on their use.
 
-### Record, Key, and Field Names
+## Full-text Searching
 
-Record, Primary Key, and Field Names are case-sensitive and must consist of letters and digits only.
+KiraDb supports full-text searching including an English-language stemmer. Let's say you have a field in your `Record` class for a title. Add this field as a `FULLTEXT` field and you can then perform full-text searches on that field:
+
+	dr.addField(new Field(TITLE, FieldType.FULLTEXT, getTitle()));
+
+Perform a full-text search on this field with the `executeQuery()` method:
+
+       List<MyClass> qResults = db.executeQuery(new MyClass(), MyClass.TITLE, "logic", null, false);
+
+## More Like This
+
+KiraDb provides a feature to locate Objects that are “like” a specified test string. This can be used to identify other Objects that are similar to a given Object. For example:
+
+        String[] fieldNames = { TextDocument.BODY };
+        List<String> matches = db.relatedObjects(new TextDocument(), doc.getBody(), fieldNames, 5, doc.getId());
+
+This returns a list of up to 5 matching document Id's (the primary field for the `TextDocument` Object class), excluding the input "reference" object (`doc`).
+
+You can also find all documents that match any given reference string, as in:
+
+        String[] fieldNames = { TextDocument.BODY };
+        List<String> matches = db.relatedObjects(new TextDocument(), testStr, fieldNames, 5, null);
+
+This can be useful, for instance, to assist users in avoiding providing duplicate content.
