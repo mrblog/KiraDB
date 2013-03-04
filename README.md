@@ -298,7 +298,7 @@ Perform a full-text search on this field with the `executeQuery()` method:
 
 ## More Like This
 
-KiraDb provides a feature to locate Objects that are “like” a specified test string. This can be used to identify other Objects that are similar to a given Object. For example:
+KiraDb provides a feature to locate Objects that are similar to a specified test string. This can be used to identify other Objects that are similar to a given Object. For example:
 
         String[] fieldNames = { TextDocument.BODY };
         List<String> matches = db.relatedObjects(new TextDocument(), doc.getBody(), fieldNames, 5, doc.getId());
