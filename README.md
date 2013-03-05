@@ -213,7 +213,7 @@ We've already seen how you can retrieve a single Object from KiraDB. There are m
 
 ### Basic Queries
 
-The general approach is to create a query, put conditions on it, and then retrieve a `List` of matching Objects using `executeQuery`. For example, to retrieve of the scores associated with with a particular team, by constraining the value for a key.
+The general approach is to create a query, put conditions on it, and then retrieve a `List` of matching Objects using `executeQuery`. For example, to retrieve the scores associated with a particular team, by constraining the value for a key.
 
 ```
 
@@ -278,7 +278,7 @@ In this mode, KiraDB will store user objects with the index. KiraDB will return 
 
 ### `STORE_MODE_BACKING` Using a Backing Store
 
-In this mode, KiraDB works with a connected `BackingStore` fas the authoritative  object repository. If the index should become corrupt, it could be rebuilt from the backing store.
+In this mode, KiraDB works with a connected `BackingStore` for the authoritative  object repository. If the index should become corrupt, it could be rebuilt from the backing store.
 
 KiraDB includes two included backing store implementations, a simple File-based object store (`FileBackingStore`) and an Amazon S3 based backing store (`S3BackingStore`)
 
