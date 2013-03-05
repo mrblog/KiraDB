@@ -177,14 +177,6 @@ To create a new subclass, implement the `Record` interface. KiraDB will return i
 
 ```
 
-You also need to initialize the index (one-time).
-
-```
-
-	db.createIndex();
-```
-
-
 
 ## Saving Objects
 
