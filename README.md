@@ -205,7 +205,7 @@ We've already seen how you can retrieve a single Object from KiraDB. There are m
 
 ### Basic Queries
 
-The general approach is to create a query, put conditions on it, and then retrieve a `List` of matching Objects using `executeQuery`. For example, to retrieve the scores associated with a particular team, by constraining the value for a key.
+The general approach is to create a query, put conditions on it, and then retrieve a `List` of matching Objects using `executeQuery`. For example, retrieve the scores associated with a particular team by constraining the value for a key:
 
 ```
 
@@ -245,6 +245,13 @@ Primary Keys in KiraDB must be `String` fields (`FieldType.STRING`) which are si
 ### Fields
 
 The `GameScore` example adds a field for the user's score. This field is to be treated as a `NUMBER` by KiraDB. This effects searching and sorting based on the field.
+
+The supported field types are:
+
+* `STRING` - simple case-sensitive string 
+* `NUMBER` - integer
+* `DATE` - java.util.Date object
+* `FULLTEXT` - a string field with full-text search capabilities
 
 ### Record, Key, and Field Names
 
