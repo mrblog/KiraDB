@@ -6,6 +6,7 @@ import java.io.IOException;
 /**
  * Construct an Amazon S3-backed instance of KiraDb.  The constructors require
  * the usual Amazon AWS S3 key, secret, and bucket name.
+ * @author David Beckemeyer and Mark Petrovic
  */
 public class S3KiraDB extends KiraDb {
 

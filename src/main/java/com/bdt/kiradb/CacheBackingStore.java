@@ -23,7 +23,6 @@ public class CacheBackingStore extends BackingStore {
          }
      }
 
-     
 	@Override
 	void storeObject(XStream xstream, Record r) {
 		String key = makeKey(r);
@@ -44,7 +43,6 @@ public class CacheBackingStore extends BackingStore {
 		return null;
 	}
 
-
 	@Override
 	void removeObject(XStream xstream, Record r, String value) {
 		String key = makeKey(r, value);
@@ -52,18 +50,15 @@ public class CacheBackingStore extends BackingStore {
 
 	}
 
-
 	@Override
 	public<T extends Record> T firstObject(XStream xstream, Record r) throws KiraException,
 			IOException, ClassNotFoundException {
 		return null;
 	}
 
-
 	@Override
 	public<T extends Record> T nextObject(XStream xstream, Record r) throws KiraException,
 			IOException, ClassNotFoundException {
 		return null;
 	}
-
 }

@@ -5,6 +5,7 @@ import java.io.IOException;
 
 /**
  * A KiraDb instance that stores objects in the filesystem.
+ * @author David Beckemeyer and Mark Petrovic
  */
 public class FileSystemKiraDb extends KiraDb {
     /**

@@ -12,14 +12,14 @@ import java.io.ObjectOutputStream;
 import java.nio.channels.FileLock;
 import java.util.logging.Logger;
 
+/**
+ * @author David Beckemeyer and Mark Petrovic
+ */
 public class FileBackingStore extends BackingStore {
 
     private Logger logger = Logger.getLogger(FileBackingStore.class.getName());
-
 	private File rootpath;
-
 	private File[] filesList;
-
 	private int filesIndex;
 	
 	private static final long WAIT_TIME = 100L;
@@ -30,7 +30,6 @@ public class FileBackingStore extends BackingStore {
     public FileBackingStore(File path) {
     	this.rootpath = path;
     }
-    
     
 	private File lock(String group, String key) {
 		String odir = new File(rootpath, LOCKPATH + group).getAbsolutePath();
@@ -69,7 +68,6 @@ public class FileBackingStore extends BackingStore {
 	private void unlock(File lockfile) {
 		lockfile.delete();
 	}
-	
 
 	@Override
 	public void storeObject(XStream xstream, Record r) throws IOException,
@@ -174,7 +172,6 @@ public class FileBackingStore extends BackingStore {
 
 	}
 
-
 	@Override
 	public<T extends Record> T firstObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {
         File directory = new File(rootpath + "/" + r.getRecordName());
@@ -182,7 +179,6 @@ public class FileBackingStore extends BackingStore {
         filesIndex = 0;
 		return (T)nextObject(xstream, r);
 	}
-
 
 	@Override
     public<T extends Record> T nextObject(XStream xstream, Record r) throws KiraException, IOException, ClassNotFoundException {

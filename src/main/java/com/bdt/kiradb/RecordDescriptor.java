@@ -24,7 +24,7 @@ public class RecordDescriptor {
 	private List<Field> fields;
 	private int storeMode;
 	
-		/**
+    /**
 	 * Construct a RecordDescriptor with the given name, with default object store mode (STORE_MODE_NONE)
 	 * 
 	 * @param recordName The globally unique name identifying this record class (table) 
