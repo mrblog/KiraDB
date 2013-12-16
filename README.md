@@ -195,7 +195,7 @@ If you have the primary key value, you can retrieve the Object using the `retrie
 
 ```
 
-	GameScore theScore = (GameScore) db.retrieveObjectByPrimaryKey("Game157");
+	GameScore theScore = (GameScore) db.retrieveObjectByPrimaryKey(new GameScore(), "Game157");
 
 ```
 
