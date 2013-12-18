@@ -782,7 +782,7 @@ public class KiraDb {
 					org.apache.lucene.document.Field.Index.NOT_ANALYZED));
 			break;
 		case NUMBER:
-			doc.add(new org.apache.lucene.document.Field(key, ((Integer)f.getValue())+"",
+			doc.add(new org.apache.lucene.document.Field(key, f.getValue().toString(),
 					org.apache.lucene.document.Field.Store.YES,
 					org.apache.lucene.document.Field.Index.NOT_ANALYZED));
 			break;
