@@ -43,6 +43,18 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -105,4 +117,12 @@
             </plugin>
         </plugins>
     </reporting>
+
+    <distributionManagement>
+        <repository>
+            <id>bdt.bintray</id>
+            <name>BDT Repository</name>
+            <url>https://api.bintray.com/maven/ae6rt/maven/kiradb</url>
+        </repository>
+    </distributionManagement>
 </project>
