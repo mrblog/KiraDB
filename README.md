@@ -7,20 +7,24 @@ _Description: KiraDB is a simple, lightweight NoSQL-style embedded database Java
 If using Maven, add the repository and dependencies to your pom file:
 
 
-	  <repositories>
-	    <repository>
-	      <id>bdt</id>
-	      <name>BDT/KiraDb</name>
-	      <url>http://mrblog.github.com/KiraDB/maven2</url>
-	    </repository>
-	  </repositories>
+                <repositories>
+                        <repository>
+                                <snapshots>
+                                        <enabled>false</enabled>
+                                </snapshots>
+                                <id>bintray</id>
+                                <name>bintray</name>
+                                <url></url>
+                        </repository>
+                </repositories>
+
 
 Dependencies:
 
 	<dependency>
 	    <groupId>com.bdt</groupId>
 	    <artifactId>kira-db</artifactId>
-	    <version>1.0</version>
+	    <version>1.0.1</version> <!-- or latest in the repository above -->
 	</dependency>
 
 If you want to compile it yourself, here's how:
