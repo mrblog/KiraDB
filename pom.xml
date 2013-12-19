@@ -4,7 +4,7 @@
 
     <groupId>com.bdt</groupId>
     <artifactId>kira-db</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>kira-db</name>
@@ -122,7 +122,7 @@
         <repository>
             <id>bdt.bintray</id>
             <name>BDT Repository</name>
-            <url>https://api.bintray.com/maven/ae6rt/maven/kiradb</url>
+            <url>https://api.bintray.com/maven/mrblog/bdt/kiradb</url>
         </repository>
     </distributionManagement>
 </project>
