@@ -139,6 +139,27 @@ public class KiraDbTest {
         assertEquals("query 3 incorrect order of results",  q3Results.get(0).descriptor().getPrimaryKey().getValue(), exp2.getTxId());
         assertEquals("query 3 possible duplicate results",  q3Results.get(1).descriptor().getPrimaryKey().getValue(), exp1.getTxId());
 
+       	Expense exp3 = new Expense();
+    	exp3.setCategory("Houseware");
+        exp3.setDate(new Date());
+        exp3.setMemo("dishes");
+        exp3.setPayee(exp1.getPayee());
+        exp3.setTxId("49974");
+        System.out.println("Writing expense 3...");
+        db.storeObject(exp3);
+        
+        // Compound query, where PAYEE is same as exp1 (Marshals) but category is different
+        Query query = new Query(new Expense());
+        query.whereMatches(Expense.PAYEE, exp1.getPayee());
+        query.whereMatches(Expense.CATEGORY, exp3.getCategory());
+        
+        List<Record> q4Results = db.executeQuery(query);
+        assertNotNull("The query 4 result should not be null", q4Results);
+        System.out.println("query 4 matched " + q4Results.size() + " records");
+        assertEquals("query 4 expected exactly one result",  q4Results.size(), 1);
+        assertEquals("query 4 returned incorrect record", q4Results.get(0).descriptor().getPrimaryKey().getValue(), exp3.getTxId());
+
+ 
     }
     
     @Test
