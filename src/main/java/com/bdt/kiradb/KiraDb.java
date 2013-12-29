@@ -483,9 +483,7 @@ public class KiraDb {
 	 * @throws ClassNotFoundException
 	 */
 	public<T extends Record> List<T> executeQuery(Record r, Field queryField, String querystr, int hitsPerPage, int skipDocs, Field sortField, Boolean reverse) throws KiraException, IOException, ClassNotFoundException {
-		List<Document> docs;
-        String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
-
+	
         Query query = new Query(r);
         query.setStart(skipDocs);
         query.setLimit(hitsPerPage);
@@ -499,6 +497,25 @@ public class KiraDb {
         if (queryField != null) {
         	query.whereMatches(queryField, querystr);
         }
+        return executeQuery(query);
+       
+       // return (List<T>) results;
+	}
+
+	/**
+	 * Query for matching records
+	 * 
+	 * @param query the query to execute
+	 * 
+	 * @return
+	 * @throws KiraException
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public<T extends Record> List<T> executeQuery(Query query) throws KiraException, IOException, ClassNotFoundException {
+		List<Document> docs;
+        String key = makeKey(query.getRecord().descriptor(), query.getRecord().getPrimaryKeyName());
+
 		try {
 			docs = searchDocuments(query);
 		} catch (ParseException e) {
@@ -510,14 +527,14 @@ public class KiraDb {
 		}
 		List<Record> results = new ArrayList<Record>();
         if (docs.size() > 0) {
-        	if (r.descriptor().getStoreMode() == RecordDescriptor.STORE_MODE_NONE) {
+        	if (query.getRecord().descriptor().getStoreMode() == RecordDescriptor.STORE_MODE_NONE) {
         		// if objects are not stored in the index, return list of matching primary keys
  
                 for (Document d: docs) {
-               		final RecordDescriptor descriptor = new RecordDescriptor(r.getRecordName());
-                    final String recordName = r.getRecordName();
-                    final String pkName = r.getPrimaryKeyName();
-                    System.out.println("@@@ A");
+               		final RecordDescriptor descriptor = new RecordDescriptor(query.getRecord().getRecordName());
+                    final String recordName = query.getRecord().getRecordName();
+                    final String pkName = query.getRecord().getPrimaryKeyName();
+                   // System.out.println("@@@ A");
 
                 	 Record aRecord = new Record() {
                          @Override
@@ -537,9 +554,9 @@ public class KiraDb {
                      };
                      // ####
 
-                    aRecord.descriptor().setPrimaryKey(new Field(r.getPrimaryKeyName(),FieldType.STRING, (String)d.get(key)));
-                 	if (r.descriptor().getFields() != null) {
-                 		for (Field f : r.descriptor().getFields()) {
+                    aRecord.descriptor().setPrimaryKey(new Field(query.getRecord().getPrimaryKeyName(),FieldType.STRING, (String)d.get(key)));
+                 	if (query.getRecord().descriptor().getFields() != null) {
+                 		for (Field f : query.getRecord().descriptor().getFields()) {
                  			// return all existing STRING fields
      						if (f.getType() == FieldType.STRING && d.get(f.getName()) != null) {
                  				aRecord.descriptor().addField(new Field(f.getName(), f.getType(),(String)d.get(f.getName())));
@@ -548,7 +565,7 @@ public class KiraDb {
                  	}
                 	results.add(aRecord);
                 }
-        	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_INDEX) != 0) {
+        	} else if ((query.getRecord().descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_INDEX) != 0) {
 
         		for (Document d: docs) {
         			String obj = d.get("object");
@@ -563,17 +580,17 @@ public class KiraDb {
         			ois.close();
 
         		}
-        	} else if ((r.descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
+        	} else if ((query.getRecord().descriptor().getStoreMode() & RecordDescriptor.STORE_MODE_BACKING) != 0) {
         		if (this.backingStore == null) {
         			throw new KiraException("STORE_MODE_BACKING but no backing store set");
         		}
         		for (Document d: docs) {
         			Record result = null;
         			if (cacheStore != null) {
-        				result = (Record)cacheStore.retrieveObject(xstream, r, d.get(key));
+        				result = (Record)cacheStore.retrieveObject(xstream, query.getRecord(), d.get(key));
             		}
             		if (result == null) {
-            			result = (Record)this.backingStore.retrieveObject(xstream, r, d.get(key));
+            			result = (Record)this.backingStore.retrieveObject(xstream, query.getRecord(), d.get(key));
             			if (result == null) {
             				throw new KiraException("Object in query results no available in backing store: " + d.get(key));
             			}
@@ -589,7 +606,6 @@ public class KiraDb {
         }
         return (List<T>) results;
 	}
-
 	/**
 	 * Find related (similar) documents based on given value and fields to examine
 	 *
