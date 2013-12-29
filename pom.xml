@@ -4,7 +4,7 @@
 
     <groupId>com.bdt</groupId>
     <artifactId>kira-db</artifactId>
-    <version>1.0.1</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
 
     <name>kira-db</name>

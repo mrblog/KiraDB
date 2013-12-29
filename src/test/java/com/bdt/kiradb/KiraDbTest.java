@@ -75,7 +75,7 @@ public class KiraDbTest {
         Record res1 = db.retrieveObjectByPrimaryKey(exp1, exp1.getTxId());
         assertNotNull("The result should not be null", res1);
 
-        db.dumpDocuments(exp1.getRecordName());
+       // db.dumpDocuments(exp1.getRecordName());
         
     	System.out.println("  1 key: " + res1.getPrimaryKeyName() + " value: "
     			+ res1.descriptor().getPrimaryKey().getValue());

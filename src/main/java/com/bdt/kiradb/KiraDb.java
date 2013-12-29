@@ -14,7 +14,7 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
+//import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
@@ -486,24 +486,21 @@ public class KiraDb {
 		List<Document> docs;
         String key = makeKey(r.descriptor(), r.getPrimaryKeyName());
 
-        Sort sortBy = null;
+        Query query = new Query(r);
+        query.setStart(skipDocs);
+        query.setLimit(hitsPerPage);
         if (sortField != null) {
-        	sortBy = new Sort(new SortField(sortField.getName(), SortField.STRING, reverse));
+        	query.setSortField(sortField, reverse);
         }
-        String queryFieldName = null;
-        Boolean fullText = false;
         if (queryField == null) {
         	if (querystr != null && r.descriptor().getFields() != null)
         		queryField = r.descriptor().getFields().get(0);
         }
-        String runQueryStr = querystr;
         if (queryField != null) {
-        	queryFieldName = queryField.getName();
-        	fullText = (queryField.getType() == FieldType.FULLTEXT);
-        	runQueryStr = queryFieldName + ":" + querystr;
+        	query.whereMatches(queryField, querystr);
         }
 		try {
-			docs = searchDocuments(r.getRecordName(), runQueryStr, fullText, sortBy, hitsPerPage, skipDocs);
+			docs = searchDocuments(query);
 		} catch (ParseException e) {
 			throw new KiraException("ParseException " + e.getMessage());
 		} catch (CorruptIndexException e) {
@@ -593,25 +590,6 @@ public class KiraDb {
         return (List<T>) results;
 	}
 
-	public void dumpDocuments(String type) throws KiraException, KiraCorruptIndexException, IOException {
-		List<Document> docs;
-
-		try {
-			docs = searchDocuments(type, null, false, Integer.MAX_VALUE);
-		} catch (ParseException e) {
-			throw new KiraException("ParseException " + e.getMessage());
-		} catch (CorruptIndexException e) {
-			throw new KiraCorruptIndexException(e.getMessage());
-		} catch (IOException e) {
-			throw e;
-		}
-        if (docs.size() > 0) {
-        	for (Document d: docs) {
-        		System.out.println("Doc: " + d);
-        	}
-        }
-	}
-
 	/**
 	 * Find related (similar) documents based on given value and fields to examine
 	 *
@@ -646,7 +624,7 @@ public class KiraDb {
         //String[] fieldNames = { "fulltext" };
         mlt.setFieldNames(fieldNames );
         Reader reader = new StringReader(testStr);
-        Query query = mlt.like( reader);
+        org.apache.lucene.search.Query query = mlt.like( reader);
       //Search the index using the query and get the top 5 results
         TopDocs topDocs = is.search(query, numHits);
         //logger.info("found " + topDocs.totalHits + " topDocs for q:" + testStr);
@@ -667,28 +645,8 @@ public class KiraDb {
 
 
 
-	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, int hitsPerPage) throws CorruptIndexException, IOException, ParseException, KiraException {
-		return searchDocuments(typeStr, querystr, fullText, null, hitsPerPage);
-	}
-	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException, KiraException {
-		return searchDocuments(typeStr, querystr, fullText, null, hitsPerPage, skipDocs);
-	}
 
-	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, Sort sortBy, int hitsPerPage) throws CorruptIndexException, IOException, ParseException, KiraException {
-		return searchDocuments(typeStr, querystr, fullText, sortBy, hitsPerPage, 0);
-	}
-	/**
-	 * @param typeStr
-	 * @param querystr
-	 * @param sortBy
-	 * @param hitsPerPage
-	 * @return
-	 * @throws CorruptIndexException
-	 * @throws IOException
-	 * @throws ParseException
-	 * @throws KiraException
-	 */
-	private List<Document> searchDocuments(String typeStr, String querystr, Boolean fullText, Sort sortBy, int hitsPerPage, int skipDocs) throws CorruptIndexException, IOException, ParseException, KiraException {
+	private List<Document> searchDocuments(Query kiraQuery) throws CorruptIndexException, IOException, ParseException, KiraException {
 
 		// 1. create the index
 		Directory index = null;
@@ -701,22 +659,30 @@ public class KiraDb {
 		// 2. query
 		BooleanQuery booleanQuery = new BooleanQuery();
 
-		// the "fulltext" arg specifies the default field to use
-		// when no field is explicitly specified in the query.
-		if (querystr != null) {
-			QueryParser parser = null;
-			if (fullText) {
-				StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
-				parser = new QueryParser(Version.LUCENE_30, "fulltext", analyzer);
-			} else {
-				KeywordAnalyzer analyzer = new KeywordAnalyzer();
-				parser = new QueryParser(Version.LUCENE_30, "title", analyzer);
+		if (kiraQuery.getQueries() != null) {
+			for (FieldQuery fq : kiraQuery.getQueries()) {
+				String runQueryStr = fq.getQuerystr();
+				if (fq.getQuerystr() != null) {
+					String queryFieldName = fq.getQueryField().getName();
+					runQueryStr = queryFieldName + ":" + fq.getQuerystr();
+				}
+				if (runQueryStr != null) {
+
+					QueryParser parser = null;
+					if (fq.getQueryField().getType() == FieldType.FULLTEXT) {
+						StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+						parser = new QueryParser(Version.LUCENE_30, "fulltext", analyzer);
+					} else {
+						KeywordAnalyzer analyzer = new KeywordAnalyzer();
+						parser = new QueryParser(Version.LUCENE_30, "title", analyzer);
+					}
+					parser.setDefaultOperator(QueryParser.Operator.AND);
+					org.apache.lucene.search.Query q = parser.parse(runQueryStr);
+					booleanQuery.add(q, org.apache.lucene.search.BooleanClause.Occur.MUST);
+				}
 			}
-			parser.setDefaultOperator(QueryParser.Operator.AND);
-			Query q = parser.parse(querystr);
-			booleanQuery.add(q, org.apache.lucene.search.BooleanClause.Occur.MUST);
 		}
-		Query q1 = new TermQuery(new Term("type", typeStr));
+		org.apache.lucene.search.Query q1 = new TermQuery(new Term("type", kiraQuery.getRecord().getRecordName()));
 		booleanQuery.add(q1, org.apache.lucene.search.BooleanClause.Occur.MUST);
 
 		this.setLastQuery(booleanQuery.toString());
@@ -728,9 +694,13 @@ public class KiraDb {
 		} catch (Exception e) {
 			throw new KiraException("IndexSearcher: " + e.getMessage());
 		}
-		if (sortBy == null)
+		Sort sortBy;
+		if (kiraQuery.getSortField() != null) {
+			sortBy = new Sort(new SortField(kiraQuery.getSortField().getName(), SortField.STRING, kiraQuery.getReverse()));
+		} else {
 			sortBy = new Sort(new SortField("date", SortField.STRING, true));
-		TopFieldDocs tfd = searcher.search(booleanQuery, null, skipDocs+hitsPerPage, sortBy);
+		}
+		TopFieldDocs tfd = searcher.search(booleanQuery, null, kiraQuery.getStart()+kiraQuery.getLimit(), sortBy);
 		ScoreDoc[] hits = tfd.scoreDocs;
 		this.setTotalHits(tfd.totalHits);
 
@@ -738,7 +708,7 @@ public class KiraDb {
 		List<Document> results = new ArrayList<Document>();
 		//System.out.println("Found " + hits.length + " hits.");
 		for(int i=0;i<hits.length;++i) {
-			if (i < skipDocs)
+			if (i < kiraQuery.getStart())
 				continue;
 			int docId = hits[i].doc;
 			Document d = searcher.doc(docId);
