@@ -687,10 +687,10 @@ public class KiraDb {
 					QueryParser parser = null;
 					if (fq.getQueryField().getType() == FieldType.FULLTEXT) {
 						StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
-						parser = new QueryParser(Version.LUCENE_30, "fulltext", analyzer);
+						parser = new QueryParser(Version.LUCENE_30, fq.getQueryField().getName(), analyzer);
 					} else {
 						KeywordAnalyzer analyzer = new KeywordAnalyzer();
-						parser = new QueryParser(Version.LUCENE_30, "title", analyzer);
+						parser = new QueryParser(Version.LUCENE_30, fq.getQueryField().getName(), analyzer);
 					}
 					parser.setDefaultOperator(QueryParser.Operator.AND);
 					org.apache.lucene.search.Query q = parser.parse(runQueryStr);
@@ -710,11 +710,22 @@ public class KiraDb {
 		} catch (Exception e) {
 			throw new KiraException("IndexSearcher: " + e.getMessage());
 		}
-		Sort sortBy;
+		Sort sortBy = null;
 		if (kiraQuery.getSortField() != null) {
 			sortBy = new Sort(new SortField(kiraQuery.getSortField().getName(), SortField.STRING, kiraQuery.getReverse()));
 		} else {
-			sortBy = new Sort(new SortField("date", SortField.STRING, true));
+			// If not specified use the first DATE field, or literal "date" if none found
+			if (kiraQuery.getRecord().descriptor().getFields() != null) {
+				for (Field f : kiraQuery.getRecord().descriptor().getFields()) {
+					if (f.getType() == FieldType.DATE) {
+						sortBy = new Sort(new SortField(f.getName(), SortField.STRING, true));
+						break;
+					}
+				}
+			} 
+			if (sortBy == null) {
+				sortBy = new Sort(new SortField("date", SortField.STRING, true));
+			}
 		}
 		TopFieldDocs tfd = searcher.search(booleanQuery, null, kiraQuery.getStart()+kiraQuery.getLimit(), sortBy);
 		ScoreDoc[] hits = tfd.scoreDocs;
