@@ -22,10 +22,12 @@ If using Maven, add the repository and dependencies to your pom file:
 Dependencies:
 
 	<dependency>
-	    <groupId>com.bdt</groupId>
-	    <artifactId>kira-db</artifactId>
-	    <version>1.0.1</version> <!-- or latest in the repository above -->
-	</dependency>
+        <groupId>com.bdt</groupId>
+        <artifactId>kira-db</artifactId>
+        <version>1.1</version>
+        <type>jar</type>
+    </dependency>
+
 
 If you want to compile it yourself, here's how:
 
@@ -35,7 +37,7 @@ If you want to compile it yourself, here's how:
 
 The pre-built jar is available at: 
 
-*   [kira-db-1.0.jar](http://mrblog.github.com/KiraDB/maven2/com/bdt/kira-db/1.0/kira-db-1.0.jar)
+*   [kira-db-1.1.jar](http://dl.bintray.com/mrblog/bdt/com/bdt/kira-db/1.1/kira-db-1.1.jar)
 
 You'll need to include versions of the dependencies yourself. You will need the following libraries (See the pom.xml for the more details):
 
@@ -218,7 +220,67 @@ The general approach is to create a query, put conditions on it, and then retrie
 
 ```
 
-This returns scores belonging to team "shaggy" returning 10 results at a time, skipping 0 results (i.e. starting at 0), sorting by SCORE in reverse sort order (highest score first).
+This returns scores belonging to team "shaggy" returning 10 results at
+a time, skipping 0 results (i.e. starting at 0), sorting by SCORE in
+reverse sort order (highest score first).
+
+### Advanced Queries
+
+There are several ways to put constraints on the objects retrieved
+from `executeQuery` . You can give multiple constraints, and objects
+will only be in the results if they match all of the constraints. In
+other words, it's like an AND of constraints.
+
+```
+
+    Query *query = new Query(new GameScorre());
+	query.whereMatches(GameScore.NAME, "Sam Bidwell");
+	query.whereMatches(GameScore.TEAM, "pilots");
+	List<GameScore> qResults = db.executeQuery(query);
+	
+   
+```
+
+Find records all players named "Sam Bidwell" that are also members of
+team "pilots".
+
+You can limit the number of results with `setLimit`. By default, results
+are limited to 100, but anything from 1 to Integer.MAX_VALUE is a
+valid limit:
+
+```
+
+    query.setLimit(10); // limit to at most 10 results
+	
+
+```
+
+You can skip the first results with `setStart`. This can be useful for pagination:
+
+```
+
+    query.setStart(10); // skip the first 10 results
+	
+
+```
+
+You can control the order in which results are returned:
+
+```
+    
+    setSortField(GameScore.SCORE);
+	
+
+```
+
+And reverse the order (ascending is the default sort order):
+
+```
+    
+    setSortField(GameScore.SCORE, true);
+	
+
+```
 
 ### Counting Records
 
