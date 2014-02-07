@@ -4,7 +4,7 @@
 
     <groupId>com.bdt</groupId>
     <artifactId>kira-db</artifactId>
-    <version>1.1</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
 
     <name>kira-db</name>
@@ -13,6 +13,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lucene.version>3.0.3</lucene.version>
+        <xstream.version>1.4.5</xstream.version>
         <java.version>1.6</java.version>
     </properties>
 
@@ -72,7 +73,7 @@
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
-            <version>1.3.1</version>
+            <version>${xstream.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
