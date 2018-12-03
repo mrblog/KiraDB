@@ -14,7 +14,7 @@ If using Maven, add the repository and dependencies to your pom file:
                                 </snapshots>
                                 <id>bintray</id>
                                 <name>bintray</name>
-                                <url></url>
+                                <url>https://dl.bintray.com/mrblog/bdt/</url>
                         </repository>
                 </repositories>
 
